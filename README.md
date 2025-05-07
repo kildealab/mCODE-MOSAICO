@@ -21,6 +21,21 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
     
 ## Usage
 
+/path/to/patient/directories/ 
+├── 📁patient_mrn1
+│   ├── 📄CT....dcm 
+│   ├── 📄CT....dcm 
+│   ├── ... 
+│   └── 📄RS....dcm 
+├── 📁patient_mrn2
+|   ├── 📄CT....dcm
+|   ├── 📄CT....dcm
+|   ├── ...
+|   └── 📄RS....dcm
+...
+├── 📁patient_mrnN
+|    └── ...
+
 
 #### Requirements
   *  [sys](https://docs.python.org/3/library/sys.html)
