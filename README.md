@@ -2,6 +2,24 @@
 
 ![Optional Text](diagram.png)
 
+
+#
+$ tree -d
+
+data
+├── cats_vs_dogs
+│   ├── test_cat_dog
+│   ├── testing
+│   │   ├── cats
+│   │   └── dogs
+│   └── training
+│       ├── cats
+│       └── dogs
+└── PetImages
+    ├── Cat
+    └── Dog
+
+
 #### Requirements
   *  [sys](https://docs.python.org/3/library/sys.html)
   *  [shutil](https://docs.python.org/3/library/shutil.html)
