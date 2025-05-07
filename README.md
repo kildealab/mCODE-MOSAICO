@@ -21,7 +21,7 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
     
 ## Usage
 
-/path/to/patient/directories/ 
+<pre> ```/path/to/patient/directories/ 
 ├── 📁patient_mrn1
 │   ├── 📄CT....dcm 
 │   ├── 📄CT....dcm 
@@ -35,7 +35,7 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 ...
 ├── 📁patient_mrnN
 |    └── ...
-
+```</pre>
 
 #### Requirements
   *  [sys](https://docs.python.org/3/library/sys.html)
