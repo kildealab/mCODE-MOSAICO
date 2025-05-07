@@ -28,10 +28,20 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │            ├──📄image_study.json
 │            ├──📄acquisition_properties.json
 │            ├──📄modality_properties.json 
-│            ├──📄image.nrrd 
+│            └──📄date_modality.nrrd 
 │        ├── ... 
-│   ├── 📁dosiomics
-│   └── 📁radiomics
+│   ├── 📁radiomis
+│            ├──📄image_study.json
+│        ├── 📁 ROI_radiomics
+│            ├──📄seg_ROI.nrrd
+│            ├──📄seg_ROI_radiomics.json
+│            └──📁 voxel_based
+│                ├──📄feature1.nrrd
+│                ├──📄feature2.nrrd
+│                └── ... 
+│   └── 📁dosiomics
+│            ├──📄seg_ROI.nrrd
+│            ├──📄seg_ROI_dosiomics.json
 │ 
 ...
 ├── 📁patient_idN
