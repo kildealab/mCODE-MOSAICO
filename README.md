@@ -34,8 +34,8 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │        ├── 📁 date_radiotherapy
 │   ├── 📁radiomics
 │        ├── 📁 ROI_radiomics
-│            ├──📄seg_ROI.nrrd
 │            ├── 📁 date_modality
+│                ├──📄seg_ROI.nrrd
 │                ├──📄seg_ROI_radiomics.json
 │                └──📁 voxel_based
 │                    ├──📄feature1.nrrd
