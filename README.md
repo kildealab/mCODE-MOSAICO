@@ -42,6 +42,10 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │   └── 📁dosiomics
 │            ├──📄seg_ROI.nrrd
 │            ├──📄seg_ROI_dosiomics.json
+│            └──📁 voxel_based
+│                ├──📄feature1.nrrd
+│                ├──📄feature2.nrrd
+│                └── ... 
 │ 
 ...
 ├── 📁patient_idN
