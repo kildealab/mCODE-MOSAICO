@@ -1,23 +1,25 @@
 # mCodeRad_Extractor
+## Table of Contents
+  *  [Authors](#Authors)
+  *  [Motivation](#Motivation)
+  *  [Features](#Features)
+  *  [Dependencies](#Dependencies)
+  *  [Usage](#Usage)
+  *  [Use Case](#UseCase)
+  *  [Acknowledgements](#Acknowledgments)
+## Authors
+Odette Rios-Ibacache and James Manalad
 
+Contact email: <a href="mailto:odette.riosibacache@mail.mcgill.ca">odette.riosibacache@mail.mcgill.ca</a>
+
+Website:  [www.kildealab.com](https://www.kildealab.com) 
+
+## Motivation
+## Features
 ![Optional Text](diagram.png)
 
-
-#
-$ tree -d
-
-data
-├── cats_vs_dogs
-│   ├── test_cat_dog
-│   ├── testing
-│   │   ├── cats
-│   │   └── dogs
-│   └── training
-│       ├── cats
-│       └── dogs
-└── PetImages
-    ├── Cat
-    └── Dog
+    
+## Usage
 
 
 #### Requirements
