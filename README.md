@@ -22,7 +22,7 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 ## Usage
 
 <pre> /path/to/patient/directories/ 
-├── 📁patient_mrn1
+├── 📁patient_id
 │   ├── 📁medical_images
 │        ├── 📁 date_modality
 │            ├──📄image_study.json
@@ -34,7 +34,7 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │   └── 📁radiomics
 │ 
 ...
-├── 📁patient_mrnN
+├── 📁patient_idN
 |    └── ...
 </pre>
 
