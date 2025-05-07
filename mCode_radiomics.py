@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import json
 import radiomics 
-
+import shutil
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,33 +25,42 @@ from matplotlib import ticker
 #GETS THE TAG VALUE FROM THE DICOM 
 def get_dicom_tag_value(dicom, keyword, default=None):
     '''this function will get the dicom tag from the dicom filde for the given tag/code'''
-    tag_value = dicom.get(keyword, None)
-   
-    if tag_value is None:
-        return default
- 
+    if isinstance(keyword,str):
+        tag_value = dicom.get(keyword,None)
+        
+        if tag_value is None:
+            return default
+    
+    else: 
+        tag_value = dicom.get(keyword,None).value
+
     return tag_value
 
 #WITH THIS CODE WE ARE READING THE IMAGE STUDY DICOM METADATA AND STRUCTURING IT!
 #THE INFROMATION IS PART OF THE MCODE MEDICAL IMAGES EXTENSION
-def get_img_study(dicom):
+def get_img_study(path,dicom):
     
-    tag_label_list = ["Image Modality", "Image Identifier","Body Site","Body Structure",
-                      "Study Date","Study Description","Reason"]
+    tag_label_list = ['Date of Imaging',"Image Modality", "Image Identifier","Body Site","Body Structure or Part","Series Date","Study Description","Reason"]
     img_study = {}
-    img_study_keywords = ['Modality','StudyInstanceUID','AnatomicRegionSequence',
-                      'PrimaryAnatomicStructureSequence', 'StudyDate', 'StudyDescription',
+    img_study_keywords = ['ContentDate','Modality','StudyInstanceUID','AnatomicRegionSequence',"BodyPartExamined", "SeriesDate", 'StudyDescription',
                     'ReasonForPerformedProcedureCodeSequenceAttribute']
     
-    for keyword in range(0,len(img_study_keywords)):
-        img_study[tag_label_list[keyword]] = get_dicom_tag_value(dicom,img_study_keywords[keyword])
-        
+    for label in range(0,len(img_study_keywords)):
+        if isinstance(tag_label_list[label], list):
+            img_study[tag_label_list[label]] = {}
+            for word in range(1,len(img_study_keywords[label])):
+               
+                img_study[tag_label_list[label][0]][tag_label_list[label][word]]= str(get_dicom_tag_value(dicom,img_study_keywords[label][word-1]))
+        else:
+            #print(get_dicom_tag_value(dicom,tag_label_list[label]))
+            img_study[tag_label_list[label]] = str(get_dicom_tag_value(dicom,img_study_keywords[label]))
+    
     return img_study
 
 #FUNCTION GETS THE PATIENT DATA FROM THE DCM FILES THAT ARE COMPLIANT WITH MCODE
-def get_pat_data_in_dcm(dicom):
+def get_pat_data_in_dcm(path,dicom):
     pat_keywords=['PatientName','PatientBirthDate','PatientSex',
-                'EthnicGroup',' PatientAge','PatientWeight']
+                'EthnicGroup','PatientAge','PatientWeight']
     
     pat_labels=["Patient Name","Patient's Birth Date","Patient's Sex",
                 "Patient's Ethnic Group","Patient's Age","Patient's Weight"]
@@ -59,12 +68,12 @@ def get_pat_data_in_dcm(dicom):
     patient_data = {}
     for keyword in range(0,len(pat_keywords)):
        
-        patient_data[pat_labels[keyword]] = get_dicom_tag_value(dicom,pat_keywords[keyword])
+        patient_data[pat_labels[keyword]] = str(get_dicom_tag_value(dicom,pat_keywords[keyword]))
         
-    return patient_data 
+    return patient_data
 
 #GETS THE ACQUISITION ATTRIBUTES OF MEDICAL IMAGES (PART OF THE MEDICAL IMAGES MCODE EXTENSION)
-def get_acq_tags(dicom):
+def get_acq_tags(path,dicom):
     
     acquisition_dict = {"Imaging Protocol": str(get_dicom_tag_value(dicom,'PerfomedCodeSequenceAttribute')) 
                         +'\n' + str(get_dicom_tag_value(dicom,'CodeMeaning'))}
@@ -83,22 +92,23 @@ def get_acq_tags(dicom):
                 "ContrastBolusIngredient"],
                 ["ReconstructionDiameter",'FieldOfViewShape','FieldOfViewDimensions',"PercentPhaseFieldOfView"],
                 ["PatientOrientation","PatientPosition",
-                 "InstructionSequence"]
-               ]
-    
+                 "InstructionSequence"]]
+
     for label in range(0,len(acq_labels)):
         if isinstance(acq_labels[label], list):
             acquisition_dict[acq_labels[label][0]] = {}
+            #print(len(acq_labels[label]))
             for word in range(1,len(acq_labels[label])):
-                acquisition_dict[acq_labels[label][0]][acq_labels[label][word]]= get_dicom_tag_value(dicom,acq_keywords[label][word-1])
+                #print(acq_labels[label][word])
+                acquisition_dict[acq_labels[label][0]][acq_labels[label][word]]= str(get_dicom_tag_value(dicom,acq_keywords[label][word-1]))
         else:
-             acquisition_dict[acq_labels[label]] = get_dicom_tag_value(dicom,acq_keywords[label])
+             acquisition_dict[acq_labels[label]] = str(get_dicom_tag_value(dicom,acq_keywords[label]))
         
     return acquisition_dict
     
 #GETS THE RECONSTRUCTION PARAMETERS OF THE MEDICAL IMAGE OF INTEREST
 #THIS INFORMATION IS PART OF OUR MCODE EXTENSION
-def recon_parameters(dicom):
+def recon_parameters(path,dicom):
     recon_dict = {}
     
     recon_labels = ["Image Type","Slice Thickness (mm)","Slice Spacing (mm)", 
@@ -111,17 +121,16 @@ def recon_parameters(dicom):
     for label in range(0,len(recon_labels)):
         if isinstance(recon_labels[label], list):
             recon_dict[recon_labels[label][0]] = {}
-         
+            #print(len(recon_labels[label]))
             for word in range(1,len(recon_labels[label])):
-            
-                recon_dict[recon_labels[label][0]][recon_labels[label][word]]= get_dicom_tag_value(dicom,recon_keywords[label][word-1])
+                #print(recon_labels[label][word])
+                recon_dict[recon_labels[label][0]][recon_labels[label][word]]= str(get_dicom_tag_value(dicom,recon_keywords[label][word-1]))
         else:
-             recon_dict[recon_labels[label]] = get_dicom_tag_value(dicom,recon_keywords[label])
+             recon_dict[recon_labels[label]] = str(get_dicom_tag_value(dicom,recon_keywords[label]))
                 
     return recon_dict
-    
 #GETS THE TAGS OF INTEREST FOR THE CT IMAGE (PART OF THE MCODE EXTENSION)
-def get_ct_tags(dicom):
+def get_ct_tags(path,dicom):
     ct_dict = {}
    
     ct_tags = ["ImageType","ScanOptions","KVP",
@@ -141,13 +150,15 @@ def get_ct_tags(dicom):
             
     for keyword in range(0,len(ct_tags)):
        
-        ct_dict[ct_labels[keyword]] = get_dicom_tag_value(dicom,ct_tags[keyword])
+        ct_dict[ct_labels[keyword]] = str(get_dicom_tag_value(dicom,ct_tags[keyword]))
         
     return ct_dict
     
+    
 #MRI INFORMATION OF INTEREST FROM THE DICOM FILE
 #REQUIRED INFORMATION FOR THE MCODE EXTENSION
-def get_mri_tags(dicom):
+
+def get_mri_tags(path,dicom):
     mri_dict = {}
    
     mri_tags = ["ImageType","SequenceName","MagneticFieldStrength","RepetitionTime","EchoTime",
@@ -157,11 +168,10 @@ def get_mri_tags(dicom):
                 "Repetition Time","Echo Time","Echo Time Length","Inversion Time",
                 "Flip Angle","Number of Excitations","k-Space Trajectory"]
     for keyword in range(0,len(mri_tags)):
-       
-        mri_dict[mri_labels[keyword]] = get_dicom_tag_value(dicom,mri_tags[keyword])
+      
+        mri_dict[mri_labels[keyword]] = str(get_dicom_tag_value(dicom,mri_tags[keyword]))
     
     return mri_dict
-    
 #PET INFORMATION TO EXTRACT THE MCODE INFORMATION EXTRACTION
 def get_pet_tags(dicom):
     pet_dict = {}
@@ -216,32 +226,32 @@ def get_pet_tags(dicom):
 ################################3
 
 #GETS THE FORMAT OF THE MEDICAL IMAGES EITHER DCM, NII OR NRRD
+
 def get_set_images(dir_image_path):
     format_image = os.listdir(dir_image_path)[0].split('.')[-1]
     if format_image=='dcm':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x and image_modality in x])
+        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x])
         slices = [dcm.dcmread(j, force=True) for j in img_files]
         try:
             slice_filtered = [i for i in slices if i.Modality in ['CT','CBCT','CBCT_SCAN','MR','PT']]
-            #CHECKING THAT IF THE UID IS NOT AVAILABLE THE TAG MODALITY IS ANOTHER WAY TO GET THE TYPE OF DCM IMAGE 
             return slice_filtered
         except:
-            CT = '1.2.840.10008.5.1.4.1.1.2' #UID VALUE CORRESPONDING TO THE CT AND CBCT IMAGES (DCM)
-            MR = '1.2.840.10008.5.1.4.1.1.4' #UID VAKUE FOR MRI IMAGES
-            PT = '1.2.840.10008.5.1.4.1.1.128' #UID VALUE FOR PET IMAGES
-            slice_filtered = [i for i in slices if i[0x0008, 0x0016].value in [CT, MR,PT]] #FILTERING IMAGES
-            #IF THE INPUT DCM IS NOT A CT, CBCT, MRI OR PET. E.G. RT DOSE OR RT STRUCTURE 
+#CHECKING THAT IF THE UID IS NOT AVAILABLE THE TAG MODALITY IS ANOTHER WAY TO GET THE TYPE OF DCM IMAGE         
+            CT = '1.2.840.10008.5.1.4.1.1.2'
+            MR = '1.2.840.10008.5.1.4.1.1.4'
+            PT = '1.2.840.10008.5.1.4.1.1.128'
+            slice_filtered = [i for i in slices if i[0x0008, 0x0016].value in [CT, MR,PT]]
             return slice_filtered   
-            
-    elif format_image=='nii': #IN CASE THE INPUT IMAGE IS NOT .DCM FORMAT THE FUNCTION READS .NII 
-    #HOWEVER FOR THIS FUNCTION IT IS ASSUMED THAT THE IMAGE IS WHAT IT IS DESIRED (CT, MRI, PET, CBCT)
+    elif format_image=='nii':
         img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nii' in x])
         return img_files
-    #SAME FOR .NRRD FORMAT 
-    #.NRRD AND .NII IMAGES ARE USUALLY FROM PUBLIC IMAGES
     elif format_image=='nrrd':
         img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
         return img_files
+    else:
+        return []
+
+            
    
 
 #IT GETS THE MASKS WHEN THEY ARE SAVED IN NII.GZ
@@ -363,13 +373,13 @@ def save_img_dcm_as_nrrd(set_images, dcm_save_path,image_name):
     data_3d = None
 
     dicom_files = set_images
-    ds0= dcm.dcmread(set_images[0], force=True)
+    ds0= set_images[0]
 
     pixel_spacing = (float(ds0.PixelSpacing[0]),float(ds0.PixelSpacing[1]),float(ds0.SliceThickness))
     pixels_dimensions = (int(ds0.Rows),int(ds0.Columns),len(dicom_files))
     array_dicom = np.zeros(pixels_dimensions,dtype=ds0.pixel_array.dtype)
 
-    slices = [dcm.dcmread(j, force=True) for j in set_images]
+    slices = [j for j in set_images]
     slices.sort(key = lambda x: (x.InstanceNumber))
               
     for dicom_file in slices:
@@ -385,6 +395,7 @@ def save_img_dcm_as_nrrd(set_images, dcm_save_path,image_name):
         print(f"Failed to write nrrd file {image_name} to {dcm_save_path}")
          
     return
+
     
 #SAVES RT DOSE AS NRRD FILE
 #TO DO: ADD THE DATE!
@@ -413,24 +424,30 @@ def save_RT_dose_as_nrrd(rt_dose,set_images,dcm_save_path):
     
     return
    
-   
+#FUNCTION TO GET THE KEYS FOR EACH NAME ROI
 def get_ROI_keys(RS_file_path):  #ROI Name different from the PTV
     RS_file = dcm.read_file(RS_file_path)
     contour_keys = RS_file.StructureSetROISequence
     return [str(x.ROIName) for x in contour_keys]
 
-def get_PTV_keys(RS_file_path): #de los PTV
+#FUNCTION TO GET THE KEY NAME FOR THE PTV RELATED ELEMENTS
+def get_PTV_keys(RS_file_path): 
     ROI_keys = get_ROI_keys(RS_file_path)
     return [x for x in ROI_keys if 'ptv' in x.lower()]
 
-def get_GTV_keys(RS_file_path): #de los GTV
+#FUNCTION TO GET THE KEY NAME FOR THE GTV RELATED ELEMENTS
+
+def get_GTV_keys(RS_file_path): 
     ROI_keys = get_ROI_keys(RS_file_path)
     return [x for x in ROI_keys if 'gtv' in x.lower()]
 
-def get_CTV_keys(RS_file_path): #de los CTV
+#FUNCTION TO GET THE KEY NAME FOR THE CTV  
+#IN CASE THAT THERE ARE MORE THAN ONE CTV KEY (E.G. CTV_5MM) THE RADIOMICS/DOSIOMICS CAN BE EXTRACTED FOR ALL OF THEM
+def get_CTV_keys(RS_file_path): 
     ROI_keys = get_ROI_keys(RS_file_path)
     return [x for x in ROI_keys if 'ctv' in x.lower()]
     
+
 def get_mask_nifti(roi_array,start_x,start_y,pixel_spacing):
     '''
     Get the pixel positions (rather than the x,y coords) of the contour array so it can be plotted.
@@ -507,7 +524,6 @@ def resample_dose_dist(dsDose,number_slices,dsCTs,ctArray):
     
     return doseArrayResampled2
       
-        
 
 #FUNCTION TO VISUALIZE DOSE MAP+CT MEDICAL IMAGE + SEGMENTATION
 def data_visualize(dose_img,slices,seg):
@@ -557,12 +573,13 @@ def get_radiomics(method,imageName,maskName,ROIName,path_radiomics):
         for i,featureName in enumerate(featureVector.keys()):
             if featureName.split('_')[1] in keys_features:
                 feature_dict[featureName] = float(featureVector[featureName])
-        with open(path_radiomics+'Seg_'+ROIName+"_radiomics.json", "w") as outfile: 
+        with open(path_radiomics+'seg_'+ROIName+"_radiomics.json", "w") as outfile: 
         #FEATURE JSON FILE SAVE IN THE RADIOMICS FOLDER PER PATIENT AND IMAGE STUDIED
                 json.dump(feature_dict, outfile,indent=4)
     return  
-    
-def get_dosiomics(method,imageName,maskName,ROIName,path_radiomics):
+
+#FUNCTION TO EXTRACT THE DOSIOMICS INFORMATION FROM A GIVEN ROI NAME
+def get_dosiomics(method,imageName,maskName,ROIName,path_dosiomics):
     
     software_version = radiomics.__version__
     parameters = os.path.abspath(os.path.join('Params.yaml'))
@@ -590,12 +607,13 @@ def get_dosiomics(method,imageName,maskName,ROIName,path_radiomics):
         for i,featureName in enumerate(featureVector.keys()):
             if featureName.split('_')[1] in keys_features:
                 feature_dict[featureName] = float(featureVector[featureName])
-        with open(path_radiomics+'Seg_'+ROIName+"_dosiomics.json", "w") as outfile: 
+        with open(path_dosiomics+'Seg_'+ROIName+"_dosiomics.json", "w") as outfile: 
         #FEATURE JSON FILE SAVE IN THE RADIOMICS FOLDER PER PATIENT AND IMAGE STUDIED
                 json.dump(feature_dict, outfile,indent=4)
     return 
     
-
+def get_dosimetricfeatures():
+  return
     
 def get_data_from_csv(path):
     return
@@ -616,17 +634,21 @@ def get_data_from_documents(path,type):
 ###############
     
 #SAVE THE JSON FILES FOR A GIVEN PATH TO SAVE (PATH_SAVE), FOR A GIVEN DICOM IMAGE
-def save_JSON_attributes(path_save,dicom):
+def save_JSON_attributes(path_save,path,dicom):
 
-    img_study_dict = get_img_study(dicom)
+    img_study_dict = get_img_study(path,dicom)
     with open(path_save+"/image_study_attributes.json", "w") as outfile: 
         json.dump(img_study_dict, outfile,indent=4)
-        
-    pat_data_dict = get_pat_data_in_dcm(dicom)
+    
+    print('---')
+    pat_data_dict = get_pat_data_in_dcm(path,dicom)
+    print('---')
+    print(pat_data_dict)
     with open(path_save+"/cancer_patient_attributes.json", "w") as outfile: 
         json.dump(pat_data_dict, outfile,indent=4)
+   
+    acq_data_dict =get_acq_tags(path,dicom)
     
-    acq_data_dict =get_acq_tags(dicom)
     with open(path_save+"/image_acquisition_attributes.json", "w") as outfile: 
         json.dump(acq_data_dict, outfile,indent=4)
         
@@ -636,18 +658,19 @@ def save_JSON_attributes(path_save,dicom):
         json.dump(recon_data_dict, outfile,indent=4)
         
     if str(img_study_dict['Image Modality']).lower()=='ct' or str(img_study_dict['Image Modality']).lower()=='cbct':    
-        ct_dict_data = get_ct_tags(dicom)
+        ct_dict_data = get_ct_tags(path,dicom)
         with open(path_save+"/CT_acquisition_properties.json", "w") as outfile: 
             json.dump(ct_dict_data, outfile,indent=4)
     elif str(img_study_dict['Image Modality']).lower()=='mri':
-        mri_dict_data = get_mri_tags(dicom)
+        mri_dict_data = get_mri_tags(path,dicom)
         with open(path_save+"/MRI_acquisition_properties.json", "w") as outfile:
             json.dump(mri_dict_data, outfile,indent=4)
     elif str(img_study_dict['Image Modality']).lower()=='pt':
-        pet_dict_data = get_pet_tags(dicom)
+        pet_dict_data = get_pet_tags(path,dicom)
         with open(path_save+"/PET_acquisition_properties.json", "w") as outfile:
             json.dump(pet_dict_data, outfile,indent=4)
-    return
+            
+    return 
             
 
 
@@ -658,7 +681,7 @@ def save_JSON_attributes(path_save,dicom):
 #CREATE THE FOLDER FOR THE GIVEN PATIENT USING THE MRN
 def create_patient_folder(path_save,name_patient_mrn):
     
-    folder_path = path_save+"/Patient_"+name_patient_mrn  #SET THE PATH FOR THE PATIENT #CHANGE THE PATH IF NECESSARY
+    folder_path = path_save+"/patient_"+name_patient_mrn  #SET THE PATH FOR THE PATIENT #CHANGE THE PATH IF NECESSARY
     if os.path.isdir(folder_path):  
         print(f"The folder '{folder_path}' exists.") 
     else:
@@ -667,9 +690,49 @@ def create_patient_folder(path_save,name_patient_mrn):
         print(f"Creating folder for Patient '{name_patient_mrn}'...")
         os.mkdir(folder_path)
         print(f"Folder created sucessfully")
-    return
+        #return folder_path
     
+
+#IT COPIES THE ORIGINAL DIRECTORY NAMES WITHOUR THE FILES IN IT, ONLY THE LINK PATHS OF THE FOLDERS. 
+def copy_paths(source_folder):
+    paths = []
+   
+    for root, _, files in os.walk(source_folder):
+        for file in files:
+            file_path = os.path.join(root, file)
+            if '.dcm' in file_path or '.nrrd' in file_path or '.nii.gz' in file_path or '.nii' in file_path:
+                continue
+            else:
+               
+                paths.append(file_path)
+
+        for subdir in os.listdir(root):
+            subdir_path = os.path.join(root, subdir)
+            if '.dcm' in subdir_path or '.nrrd' in subdir_path or '.nii.gz' in subdir_path or '.nii' in subdir_path:
+                continue
+            else:
+                if os.path.isdir(subdir_path):
+                  
+                    paths.append(subdir_path)
+    return paths
+
 #GET THE PATHS OF THE DIRECTORY OF THE DIRECTORIES AVAILABLE
+def create_folder(folder_path):
+    if os.path.isdir(folder_path):  
+        print(f"The folder '{folder_path}' exists.") 
+    else:
+        print(f"The folder '{folder_path}' does not exist") #CREATION OF THE FOLDER   
+        os.mkdir(folder_path)
+        print(f"Folder created sucessfully")
+        print('\n')
+        
+def get_folders_in_directory(directory_path):
+    """
+    Returns a list of folder names present in the given directory.
+    """
+    folder_list = [entry.name for entry in os.scandir(directory_path) if entry.is_dir()]
+    return folder_list
+    
 def get_dict_paths(directory_path,paths_dict,folders):
     #while len(folders)!=0:
     for folder in folders:
@@ -682,71 +745,94 @@ def get_dict_paths(directory_path,paths_dict,folders):
             continue
         
         get_dict_paths(directory_path2,paths_dict,folders2) 
-        
+
+#def save_dose_map()
+
+    #resample_dose_dist(dsDose,number_slices,dsCTs,ctArray)
+    #save_RT_dose_as_nrrd(rt_dose,set_images,dcm_save_path)
+#CREATE THE FOLDER PER EACH LINK PATH IN THE NEW DIRECTORY (SAVE_PATH) 
+#BASICALLY FOR NOW, IT CLONES THE FOLDERS IN EACH PATIENT FOLDER WITHOUT THE FILES, ONLY THE DIRECTORIES
 def create_folder_per_path(save_path,paths_dict,folders):
     for folder in folders:
-        directory_path2= save_path+'/'+folder
+        directory_path2= save_path+'/'+folder+'/'
+        create_folder(directory_path2)
         if folder in paths_dict.keys():
             folders2 = paths_dict[folder]
             for folder2 in folders2:
-                new_path = directory_path2 +'/'+folder+'/'+folder2   
-                print(new_path)
+                new_path = directory_path2+folder2
+                create_folder(new_path)
         else:
             continue
         
         create_folder_per_path(new_path,paths_dict,folders2)
 
-            
-def extract_from_all_the_images_per_patient(path_patient,path_save):
-    folders = sorted(get_folders_in_directory(directory_path))    
+#FUNCTION TO PERFOM THE EXTRACTION DATA OF ALL THE PATIENTS
+def clone_folders_per_patient_v1(path_patient,path_save):
+    directory_path = path_patient
+    folders = sorted(get_folders_in_directory(directory_path))
+      
     paths_dict = {'Patient':directory_path.split('/')[-1]}
     paths_dict['Folders'] = folders
-
- 
+    
     #return paths_dict
     get_dict_paths(directory_path,paths_dict,folders)
-    create_patient_folder(paths_dict['Patient'])
-    
-    for folder in
-     
-    #set_images = get_set_images(path)
-    set_images = get_set_images(dir_image_path)
-    save_JSON_attributes(path_save,path,dicom)
-    
 
+    create_patient_folder(path_save,paths_dict['Patient'])
+    folder_path = path_save+"/patient_"+paths_dict['Patient']
+    path_save3 = folder_path+'/medical_images'
+        
+    create_folder(path_save3)
+    
+    create_folder_per_path(path_save3,paths_dict,paths_dict['Folders'])
+    create_folder(folder_path+'/radiomics')
+    create_folder(folder_path+'/dosiomics')
+    return path_save3
+    #folder_path_images = copy_paths(path_patient)
+    
+    #set_images = get_set_images(dir_imag_path)
+    #save_JSON_attributes(path_save,path,dicom)
+
+def get_radiomics_dosiomics(imageName,maskName,ROIname,path_radiomics,path_dosiomics):
+    get_radiomics('segmentation',imageName,maskName,ROIname,path_radiomics)
+    get_dosiomics('segmentation',imageName,maskName,ROIname,path_dosiomics) 
+    return
 #########################
 
 if __name__ == "__main__":
     
     #SPECIFYING PATH IN THE CODE
-    path = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/632/'
+    path_patient = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/632'
+    path_save  = 'TRY'
+    path_RS_file = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/'
+    
     #CREATING FOLDER FOR THE SPECIFIC PATIENT
-    create_patient_folder(name_patient_mrn)
-    
-    folders = sorted(get_folders_in_directory(directory_path))  
-
-    paths_dict = {'Patient':directory_path.split('/')[-1]}
-    paths_dict['Folders'] = folders
-
+    new_path_save = clone_folders_per_patient_v1(path_patient,path_save)
  
-    #return paths_dict
-    get_dict_paths(directory_path,paths_dict,folders)
-    
     #GETTING SET OF IMAGES FROM THE PATH OF THE DATA
-    dicom = dcm.dcmread(set_images[0], force=True)
-    
-    
-    if acq_data_dict['Scanner Vendor'] in dict_scanners_CBCT:
-        path_save = img_study_dict['Series Date']+'CBCT'+
-        
-    else:
-        path_save = img_study_dict['Image Modality']+'_'+img_study_dict['Series Date']
-    
-    if not os.path.isdir(path_save):
-        os.makedirs(path_save)
- 
-   path_radiomics = '/radiomics/'+path_image+'/'+ROI+'_radiomics'
-   get_radiomics('segmentation',imageName,maskName,'Brain',path_radiomics)
-   get_dosiomics('segmentation',imageName,maskName,'Brain',path_dosiomics) 
+    #dicom = dcm.dcmread(set_images[0], force=True)
+       
+    folder_path_images = sorted(copy_paths(path_patient))
+    new_folder_path_images = sorted(copy_paths(new_path_save))
+   
+    for folder_image in folder_path_images:
+         #create_folder(folder_path)
+         print(folder_image)
+         name_folder = folder_image.split('/')[-1]
+         for new_folder_name in new_folder_path_images:
+             new_name_folder = new_folder_name.split('/')[-1]
+             if name_folder==new_name_folder:
+                 set_images = get_set_images(folder_image)
+                 save_JSON_attributes(new_folder_name,folder_image,set_images[0])
+                 try:
+                     image_name = set_images[0].ContentDate+'_'+set_images[0].Modality
+                 except:
+                     image_name = set_images[0].AcquisitionDate+'_'+set_images[0].Modality
+                 save_img_dcm_as_nrrd(set_images, new_folder_name,image_name)
+      #   for ROI in rois:
+     #        create_folder(folder_image+'/radiomics/'+ROI+'_radiomics')
+    #seg = sitk.ReadImage('seg_Parotid_R.nrrd',imageIO='NrrdImageIO')
+             
+    #path_radiomics = '/radiomics/'+path_image+'/'+ROI+'_radiomics' 
+             
 
  
