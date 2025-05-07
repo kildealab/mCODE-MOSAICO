@@ -23,15 +23,16 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 
 <pre> /path/to/patient/directories/ 
 ├── 📁patient_mrn1
-│   ├── 📄CT....dcm 
-│   ├── 📄CT....dcm 
-│   ├── ... 
-│   └── 📄RS....dcm 
-├── 📁patient_mrn2
-|   ├── 📄CT....dcm
-|   ├── 📄CT....dcm
-|   ├── ...
-|   └── 📄RS....dcm
+│   ├── 📁medical_images
+│        ├── 📁 date_modality
+│            ├──📄image_study.json
+│            ├──📄acquisition_properties.json
+│            ├──📄modality_properties.json 
+│            ├──📄image.nrrd 
+│        ├── ... 
+│   ├── 📁dosiomics
+│   └── 📁radiomics
+│ 
 ...
 ├── 📁patient_mrnN
 |    └── ...
