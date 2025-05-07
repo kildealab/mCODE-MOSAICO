@@ -30,6 +30,8 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │            ├──📄modality_properties.json 
 │            └──📄date_modality.nrrd 
 │        ├── ... 
+│   ├── 📁radiotherapy_treatments
+│        ├── 📁 date_radiotherapy
 │   ├── 📁radiomics
 │        ├── 📁 ROI_radiomics
 │            ├──📄seg_ROI.nrrd
