@@ -31,21 +31,22 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │            └──📄date_modality.nrrd 
 │        ├── ... 
 │   ├── 📁radiomics
-│            ├──📄image_study.json
 │        ├── 📁 ROI_radiomics
 │            ├──📄seg_ROI.nrrd
-│            ├──📄seg_ROI_radiomics.json
-│            └──📁 voxel_based
-│                ├──📄feature1.nrrd
-│                ├──📄feature2.nrrd
-│                └── ... 
+│            ├── 📁 date_modality
+│                ├──📄seg_ROI_radiomics.json
+│                └──📁 voxel_based
+│                    ├──📄feature1.nrrd
+│                    ├──📄feature2.nrrd
+│                    └── ... 
 │        ├── 📁 ROI2_radiomics
 │            ├──📄seg_ROI2.nrrd
-│            ├──📄seg_ROI2_radiomics.json
-│            └──📁 voxel_based
-│                ├──📄feature1.nrrd
-│                ├──📄feature2.nrrd
-│                └── ... 
+│            ├── 📁 date_modality
+│                 ├──📄seg_ROI2_radiomics.json
+│                 └──📁 voxel_based
+│                    ├──📄feature1.nrrd
+│                    ├──📄feature2.nrrd
+│                    └── ... 
 │   └── 📁dosiomics
 │        ├── 📁 ROI_dosiomics
 │            ├──📄seg_ROI.nrrd
