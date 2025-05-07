@@ -39,7 +39,15 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │                ├──📄feature1.nrrd
 │                ├──📄feature2.nrrd
 │                └── ... 
+│        ├── 📁 ROI2_radiomics
+│            ├──📄seg_ROI2.nrrd
+│            ├──📄seg_ROI2_radiomics.json
+│            └──📁 voxel_based
+│                ├──📄feature1.nrrd
+│                ├──📄feature2.nrrd
+│                └── ... 
 │   └── 📁dosiomics
+│        ├── 📁 ROI_dosiomics
 │            ├──📄seg_ROI.nrrd
 │            ├──📄seg_ROI_dosiomics.json
 │            └──📁 voxel_based
