@@ -8,7 +8,7 @@
   *  [Use Case](#UseCase)
   *  [Acknowledgements](#Acknowledgments)
 ## Authors
-Odette Rios-Ibacache and James Manalad
+Odette Rios-Ibacache
 
 Contact email: <a href="mailto:odette.riosibacache@mail.mcgill.ca">odette.riosibacache@mail.mcgill.ca</a>
 
