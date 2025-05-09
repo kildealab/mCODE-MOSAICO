@@ -10,14 +10,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage.draw import polygon
 import random
-
+from Registration.registration_core import find_registration_file_two_images, register_two_images
+from sitk_img_tools import save_dicoms, generate_sitk_image
 import SimpleITK as sitk
 import six
 import nrrd
 
 from radiomics import featureextractor, getFeatureClasses
 from skimage.draw import polygon
-    
+
+from Registration.registration_core import find_registration_file_two_images, register_two_images
+from sitk_img_tools import save_dicoms, generate_sitk_image
+
 from scipy.ndimage import shift
 from matplotlib import ticker
 
@@ -36,13 +40,14 @@ def get_dicom_tag_value(dicom, keyword, default=None):
 
     return tag_value
 
+
 #WITH THIS CODE WE ARE READING THE IMAGE STUDY DICOM METADATA AND STRUCTURING IT!
 #THE INFROMATION IS PART OF THE MCODE MEDICAL IMAGES EXTENSION
 def get_img_study(path,dicom):
     
     tag_label_list = ['Date of Imaging',"Image Modality", "Image Identifier","Body Site","Body Structure or Part","Series Date","Study Description","Reason"]
     img_study = {}
-    img_study_keywords = ['ContentDate','Modality','StudyInstanceUID','AnatomicRegionSequence',"BodyPartExamined", "SeriesDate", 'StudyDescription',
+    img_study_keywords = ['SeriesDate','Modality','StudyInstanceUID','AnatomicRegionSequence',"BodyPartExamined", "SeriesDate", 'StudyDescription',
                     'ReasonForPerformedProcedureCodeSequenceAttribute']
     
     for label in range(0,len(img_study_keywords)):
@@ -52,7 +57,7 @@ def get_img_study(path,dicom):
                
                 img_study[tag_label_list[label][0]][tag_label_list[label][word]]= str(get_dicom_tag_value(dicom,img_study_keywords[label][word-1]))
         else:
-            #print(get_dicom_tag_value(dicom,tag_label_list[label]))
+            
             img_study[tag_label_list[label]] = str(get_dicom_tag_value(dicom,img_study_keywords[label]))
     
     return img_study
@@ -252,7 +257,7 @@ def get_set_images(dir_image_path):
         return []
 
             
-   
+
 
 #IT GETS THE MASKS WHEN THEY ARE SAVED IN NII.GZ
 def get_set_masks(dir_mask_path,ROI):
@@ -273,6 +278,26 @@ def get_set_RD(dir_image_path):
             return slice_filtered
         except:
             RT = '1.2.840.10008.5.1.4.1.1.481.2'
+            slice_filtered = [i for i in slices if i[0x0008, 0x0016].value==RT]
+            return slice_filtered   
+    elif format_image=='nii':
+        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nii' in x])
+        return img_files
+    elif format_image=='nrrd':
+        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
+        return img_files
+        
+        
+def get_set_RS(dir_image_path):
+    format_image = os.listdir(dir_image_path)[0].split('.')[-1]
+    if format_image=='dcm':
+        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x])
+        slices = [dcm.dcmread(j, force=True) for j in img_files]
+        try:
+            slice_filtered = [i for i in slices if i.Modality=='RTSTRUCT']
+            return slice_filtered
+        except:
+            RT = '1.2.840.10008.5.1.4.1.1.481.3'
             slice_filtered = [i for i in slices if i[0x0008, 0x0016].value==RT]
             return slice_filtered   
     elif format_image=='nii':
@@ -343,10 +368,13 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
     mask_full_v2= np.swapaxes(mask_full, 0, 1)
     try:
       nrrd.write(RS_save_path+'/seg_'+ROI_name+'.nrrd', mask_full_v2)
-    
-      print(f"Wrote nrrd file for RT structure {ROI_name} file sef_"+ROI_name+" to {RS_save_path}") 
+      print("--------------------------------------------------------")
+      print(f"-   Wrote nrrd file for RT structure {ROI_name} file sef_"+ROI_name+" to {RS_save_path}   -")
+      print("--------------------------------------------------------") 
     except:
-      print(f"Failed to write nrrd for RT structure {ROI_name} file sef_"+ROI_name+" to {RS_save_path}")   
+      print("--------------------------------------------------------")
+      print(f"-   Failed to write nrrd for RT structure {ROI_name} file sef_"+ROI_name+" to {RS_save_path}   -")
+      print("--------------------------------------------------------")   
 
 #THIS SAVES THE IMAGE NII AS NRRD
 def save_img_nii_as_nrrd(set_image,save_path,image_name):
@@ -362,9 +390,13 @@ def save_img_nii_as_nrrd(set_image,save_path,image_name):
     
     try:
         nrrd.write(save_path+'/'+image_name+'.nrrd', data_3d)  
-        print(f"Wrote nrrd file {image_name} to {save_path}")
+        print("--------------------------------------------------------")
+        print(f"-   Wrote nrrd file {image_name} to {save_path}   -")
+        print("--------------------------------------------------------")
     except:
-        print(f"Failed to write nrrd file {image_name} to {save_path}")
+        print("--------------------------------------------------------")
+        print(f"-   Failed to write nrrd file {image_name} to {save_path}   -")
+        print("--------------------------------------------------------")
 
 
 #GET IMAGE FROM DCM TO NRRD
@@ -390,9 +422,13 @@ def save_img_dcm_as_nrrd(set_images, dcm_save_path,image_name):
     
     try:
         nrrd.write(dcm_save_path+'/'+image_name+'.nrrd', data_3d)  
-        print(f"Wrote nrrd file {image_name} to {dcm_save_path}")
+        print("--------------------------------------------------------")
+        print(f"-   Wrote nrrd file {image_name} to {dcm_save_path}   -")
+        print("--------------------------------------------------------")
     except:
-        print(f"Failed to write nrrd file {image_name} to {dcm_save_path}")
+        print("--------------------------------------------------------")
+        print(f"-   Failed to write nrrd file {image_name} to {dcm_save_path}   -")
+        print("--------------------------------------------------------")
          
     return
 
@@ -679,9 +715,9 @@ def save_JSON_attributes(path_save,path,dicom):
 ############
 
 #CREATE THE FOLDER FOR THE GIVEN PATIENT USING THE MRN
-def create_patient_folder(path_save,name_patient_mrn):
-    
-    folder_path = path_save+"/patient_"+name_patient_mrn  #SET THE PATH FOR THE PATIENT #CHANGE THE PATH IF NECESSARY
+def create_patient_folder(folder_path):
+    #SET THE PATH FOR THE PATIENT #CHANGE THE PATH IF NECESSARY
+    name_patient_mrn = folder_path.split('_')[-1]
     if os.path.isdir(folder_path):  
         print(f"The folder '{folder_path}' exists.") 
     else:
@@ -750,6 +786,8 @@ def get_dict_paths(directory_path,paths_dict,folders):
 
     #resample_dose_dist(dsDose,number_slices,dsCTs,ctArray)
     #save_RT_dose_as_nrrd(rt_dose,set_images,dcm_save_path)
+    
+
 #CREATE THE FOLDER PER EACH LINK PATH IN THE NEW DIRECTORY (SAVE_PATH) 
 #BASICALLY FOR NOW, IT CLONES THE FOLDERS IN EACH PATIENT FOLDER WITHOUT THE FILES, ONLY THE DIRECTORIES
 def create_folder_per_path(save_path,paths_dict,folders):
@@ -787,52 +825,119 @@ def clone_folders_per_patient_v1(path_patient,path_save):
     create_folder(folder_path+'/radiomics')
     create_folder(folder_path+'/dosiomics')
     return path_save3
-    #folder_path_images = copy_paths(path_patient)
+
+def create_main_paths_per_patient(path_patient,path_save):
+    directory_path = path_patient
+    folders = sorted(get_folders_in_directory(directory_path))
+      
+    paths_dict = {'Patient':directory_path.split('/')[-1]}
+    paths_dict['Folders'] = folders
+     
+    folder_path = path_save+"/patient_"+paths_dict['Patient']
+    path_save_images = folder_path+'/medical_images'
+    folder_path_radiomics = folder_path+'/radiomics'
+    folder_path_dosiomics = folder_path+'/dosiomics'
+
+    return path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path
     
-    #set_images = get_set_images(dir_imag_path)
-    #save_JSON_attributes(path_save,path,dicom)
+def create_folders_main_folders_per_patient(folder_path,new_path_save_images,folder_path_radiomics,folder_path_dosiomics):
+    create_patient_folder(folder_path)
+    create_folder(new_path_save_images)
+    create_folder(folder_path_radiomics)
+    create_folder(folder_path_dosiomics)
+    
 
 def get_radiomics_dosiomics(imageName,maskName,ROIname,path_radiomics,path_dosiomics):
     get_radiomics('segmentation',imageName,maskName,ROIname,path_radiomics)
     get_dosiomics('segmentation',imageName,maskName,ROIname,path_dosiomics) 
     return
+
+def get_all_folder_images(path_patient):
+    folder_path_images = sorted(copy_paths(path_patient))
+    return folder_path_images
+    
+def save_dicom_attributes_and_volume(folder_image,new_path_save_images):
+    #CREATING FOLDER FOR THE SPECIFIC PATIENT
+    #GETTING SET OF IMAGES FROM THE PATH OF THE DATA
+
+    name_folder = folder_image.split('/')[-1]
+    set_images = get_set_images(folder_image)
+         
+    if len(set_images)!=0:
+        try:
+            image_name = set_images[0].ContentDate+'_'+set_images[0].Modality #DEFINE THE FOLDER NAME FOR THE MODALITY
+        except:
+            image_name = set_images[0].SeriesDate+'_'+set_images[0].Modality
+             
+    new_folder_name = new_path_save_images+'/'+image_name
+    create_folder(new_folder_name)
+    save_JSON_attributes(new_folder_name,folder_image,set_images[0])
+    save_img_dcm_as_nrrd(set_images, new_folder_name,image_name)
+
+def isCBCT(set_images):
+    try: 
+        is_CBCT= set_images[0][0x0008,0x114a].value[0][0x0008,0x1150].value
+        return True
+    except:
+        return False
+ 
+def save_dicom_attributes_and_volume(folder_image,new_path_save_images):
+    #CREATING FOLDER FOR THE SPECIFIC PATIENT
+    #GETTING SET OF IMAGES FROM THE PATH OF THE DATA
+
+    name_folder = folder_image.split('/')[-1]
+    set_images = get_set_images(folder_image)
+    
+    if len(set_images)!=0:
+        if isCBCT(set_images)==True:
+            try:
+                image_name = set_images[0].ContentDate+'_CBCT' #DEFINE THE FOLDER NAME FOR THE MODALITY
+            except:
+                image_name = set_images[0].SeriesDate+'_CBCT'
+        
+        else: 
+            try:
+                image_name = set_images[0].ContentDate+'_'+set_images[0].Modality #DEFINE THE FOLDER NAME FOR THE MODALITY
+            except:
+                image_name = set_images[0].SeriesDate+'_'+set_images[0].Modality
+             
+    new_folder_name = new_path_save_images+'/'+image_name
+    create_folder(new_folder_name)
+    save_JSON_attributes(new_folder_name,folder_image,set_images[0])
+    save_img_dcm_as_nrrd(set_images, new_folder_name,image_name)
+
+def create_ROI_folders(RS_file_path,folder_path_radiomics):
+    ROI_names = get_ROI_keys(RS_file_path)
+    for ROI in ROI_names:
+        new_folder = folder_path_radiomics+'/'+ROI+'_radiomics'
+        create_folder(new_folder)
+      
+
 #########################
 
 if __name__ == "__main__":
     
     #SPECIFYING PATH IN THE CODE
-    path_patient = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/632'
-    path_save  = 'TRY'
-    path_RS_file = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/'
-    
-    #CREATING FOLDER FOR THE SPECIFIC PATIENT
-    new_path_save = clone_folders_per_patient_v1(path_patient,path_save)
- 
-    #GETTING SET OF IMAGES FROM THE PATH OF THE DATA
-    #dicom = dcm.dcmread(set_images[0], force=True)
-       
-    folder_path_images = sorted(copy_paths(path_patient))
-    new_folder_path_images = sorted(copy_paths(new_path_save))
+    path_patient = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/19'
+    path_save  = 'TRY2'
+    #path_RS_file = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/'
    
-    for folder_image in folder_path_images:
-         #create_folder(folder_path)
-         print(folder_image)
-         name_folder = folder_image.split('/')[-1]
-         for new_folder_name in new_folder_path_images:
-             new_name_folder = new_folder_name.split('/')[-1]
-             if name_folder==new_name_folder:
-                 set_images = get_set_images(folder_image)
-                 save_JSON_attributes(new_folder_name,folder_image,set_images[0])
-                 try:
-                     image_name = set_images[0].ContentDate+'_'+set_images[0].Modality
-                 except:
-                     image_name = set_images[0].AcquisitionDate+'_'+set_images[0].Modality
-                 save_img_dcm_as_nrrd(set_images, new_folder_name,image_name)
+    create_folders_main_folders_per_patient(path_patient,path_save)
+    paths_images_all = get_all_folder_images(path_patient)
+    new_path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path = create_main_paths_per_patient(path_patient,path_save)
+    create_folders_main_folders_per_patient(folder_path,new_path_save_images,folder_path_radiomics,folder_path_dosiomics)
+    
+    save_dicom_attributes_and_volume(paths_images_all[0],new_path_save_images)
+    path_RS_all = get_all_folder_RS(path_patient)
+    #create_ROI_folders(RS_file_path,folder_path_radiomics)
+   
+     
+    #get_set_RS(dir_image_path)
+    
       #   for ROI in rois:
      #        create_folder(folder_image+'/radiomics/'+ROI+'_radiomics')
     #seg = sitk.ReadImage('seg_Parotid_R.nrrd',imageIO='NrrdImageIO')
              
     #path_radiomics = '/radiomics/'+path_image+'/'+ROI+'_radiomics' 
              
-
  
