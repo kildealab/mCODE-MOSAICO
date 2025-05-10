@@ -42,8 +42,8 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 │                    ├──📄feature2.nrrd
 │                    └── ... 
 │        ├── 📁 ROI2_radiomics
-│            ├──📄seg_ROI2.nrrd
 │            ├── 📁 date_modality
+|                 ├──📄seg_ROI2.nrrd
 │                 ├──📄seg_ROI2_radiomics.json
 │                 └──📁 voxel_based
 │                    ├──📄feature1.nrrd
