@@ -24,43 +24,44 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 <pre> /path/to/patient/directories/ 
 ├── 📁patient_id
 │   ├── 📁medical_images
-│        ├── 📁 date_modality
-│            ├──📄image_study.json
-│            ├──📄acquisition_properties.json
-│            ├──📄modality_properties.json 
-│            └──📄date_modality.nrrd 
-│        ├── ... 
-│   ├── 📁radiotherapy_treatments
-│        ├── 📁 date_radiotherapy
+│       ├── 📁 date_modality
+│           ├──📄image_study.json
+│           ├──📄acquisition_properties.json
+│           ├──📄modality_properties.json 
+│           └──📄date_modality.nrrd 
+│       ├── ... 
+│   ├── 📁RT_plans
+│       ├── 📁 date_RT
 │   ├── 📁radiomics
-│        ├── 📁 ROI_radiomics
-│            ├── 📁 date_modality
-│                ├──📄seg_ROI.nrrd
-│                ├──📄seg_ROI_radiomics.json
-│                └──📁 voxel_based
-│                    ├──📄feature1.nrrd
-│                    ├──📄feature2.nrrd
-│                    └── ... 
+│       ├── 📁 ROI_radiomics
+│           ├── 📁 date_modality
+│               ├──📄seg_ROI.nrrd
+│               ├──📄seg_ROI_radiomics.json
+│               └──📁 voxel_based
+│                  ├──📄feature1.nrrd
+│                  ├──📄feature2.nrrd
+│                  └── ... 
 │        ├── 📁 ROI2_radiomics
 │            ├── 📁 date_modality
-|                 ├──📄seg_ROI2.nrrd
-│                 ├──📄seg_ROI2_radiomics.json
-│                 └──📁 voxel_based
-│                    ├──📄feature1.nrrd
-│                    ├──📄feature2.nrrd
-│                    └── ... 
+|                ├──📄seg_ROI2.nrrd
+│                ├──📄seg_ROI2_radiomics.json
+│                └──📁 voxel_based
+│                   ├──📄feature1.nrrd
+│                   ├──📄feature2.nrrd
+│                   └── ... 
 │   └── 📁dosiomics
-│        ├── 📁 ROI_dosiomics
-│            ├──📄seg_ROI.nrrd
-│            ├──📄seg_ROI_dosiomics.json
-│            └──📁 voxel_based
-│                ├──📄feature1.nrrd
-│                ├──📄feature2.nrrd
-│                └── ... 
+│       ├── 📁 ROI_dosiomics
+│           ├── 📁 date_RT
+│               ├──📄seg_ROI.nrrd
+│               ├──📄seg_ROI_dosiomics.json
+│           └──📁 voxel_based
+│              ├──📄feature1.nrrd
+│              ├──📄feature2.nrrd
+│              └── ... 
 │ 
 ...
 ├── 📁patient_idN
-|    └── ...
+|   └── ...
 </pre>
 
 #### Requirements
