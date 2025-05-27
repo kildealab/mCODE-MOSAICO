@@ -1,4 +1,5 @@
-# mCodeRad_Extractor
+# mCODE-MOSAICO: Multi (Radi-Dosi)Omics features Acquisition and Images Characteristics for Oncology
+
 ## Table of Contents
   *  [Authors](#Authors)
   *  [Motivation](#Motivation)
