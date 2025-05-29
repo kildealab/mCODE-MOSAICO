@@ -71,8 +71,6 @@ The scattered nature of health data, along with the lack of standardization and 
   *  [sys](https://docs.python.org/3/library/sys.html)
   *  [shutil](https://docs.python.org/3/library/shutil.html)
   *  [matplotlib](https://matplotlib.org/)
-  *  [time](https://docs.python.org/3/library/time.html)
-  *  [datetime](https://docs.python.org/3/library/datetime.html)
   *  [scipy](https://scipy.org/)
   *  [skimage](https://scikit-image.org/)
   *  [numpy](https://numpy.org/)
