@@ -67,7 +67,7 @@ The scattered nature of health data, along with the lack of standardization and 
 |   └── ...
 </pre>
 
-#### Requirements
+#### Dependencies
   *  [sys](https://docs.python.org/3/library/sys.html)
   *  [shutil](https://docs.python.org/3/library/shutil.html)
   *  [matplotlib](https://matplotlib.org/)
