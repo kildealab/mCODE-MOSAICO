@@ -90,3 +90,4 @@ pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
 This project is provided under the GNU GLPv3 license to preserve open-source access to any derivative works. See the LICENSE file for more information.
 ## References
 * Zwanenburg, Alex, Stefan Leger, Martin Vallières, and Steffen Löck. "Image Biomarker Standardisation Initiative." ArXiv, (2016). Accessed June 18, 2025. https://doi.org/10.1148/radiol.2020191145.
+* Vallières, M., Zwanenburg, A., Badic, B., Cheze Le Rest, C., Visvikis, D., & Hatt, M. (2018). Responsible Radiomics Research for Faster Clinical Translation. Journal of nuclear medicine : official publication, Society of Nuclear Medicine, 59(2), 189–193. https://doi.org/10.2967/jnumed.117.200501
