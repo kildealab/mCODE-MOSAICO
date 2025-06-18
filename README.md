@@ -79,5 +79,11 @@ The scattered nature of health data, along with the lack of standardization and 
   *  [SimpleITK](https://docs.python.org/3/library/json.html)
   *  [pynrrd](https://pynrrd.readthedocs.io/en/stable/index.html#)
 
+## Installation
+
+By pulling the latest version from GitHub. Please note that your Python installation should be 3.6 or later. 
+```
+pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
+```
 ## License 
 This project is provided under the GNU GLPv3 license to preserve open-source access to any derivative works. See the LICENSE file for more information.
