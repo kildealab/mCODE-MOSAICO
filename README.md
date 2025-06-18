@@ -88,3 +88,5 @@ pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
 
 ## License 
 This project is provided under the GNU GLPv3 license to preserve open-source access to any derivative works. See the LICENSE file for more information.
+## References
+* Zwanenburg, Alex, Stefan Leger, Martin Vallières, and Steffen Löck. "Image Biomarker Standardisation Initiative." ArXiv, (2016). Accessed June 18, 2025. https://doi.org/10.1148/radiol.2020191145.
