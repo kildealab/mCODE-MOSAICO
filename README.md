@@ -67,17 +67,17 @@ The scattered nature of health data, along with the lack of standardization and 
 |   └── ...
 </pre>
 
-#### Dependencies
-  *  [sys](https://docs.python.org/3/library/sys.html)
+## Dependencies
   *  [shutil](https://docs.python.org/3/library/shutil.html)
   *  [matplotlib](https://matplotlib.org/)
   *  [scipy](https://scipy.org/)
   *  [skimage](https://scikit-image.org/)
   *  [numpy](https://numpy.org/)
-  *  [os](https://docs.python.org/3/library/os.html)
   *  [gc](https://docs.python.org/3/library/gc.html)
   *  [pandas](https://pandas.pydata.org/)
   *  [pydicom](https://pydicom.github.io/pydicom/stable/)
-  *  [json](https://docs.python.org/3/library/json.html)
   *  [SimpleITK](https://docs.python.org/3/library/json.html)
   *  [pynrrd](https://pynrrd.readthedocs.io/en/stable/index.html#)
+
+## License 
+This project is provided under the GNU GLPv3 license to preserve open-source access to any derivative works. See the LICENSE file for more information.
