@@ -5,9 +5,11 @@
   *  [Motivation](#Motivation)
   *  [Features](#Features)
   *  [Dependencies](#Dependencies)
-  *  [Usage](#Usage)
-  *  [Use Case](#UseCase)
-  *  [Acknowledgements](#Acknowledgments)
+  *  [Installation](#Installation)
+  *  [Usage and Examples](#UsageandExamples)
+  *  [License](#License)
+  *  [How to Cite](#HowtoCite)
+  *  [References](#References)
 ## Authors
 Odette Rios-Ibacache
 
@@ -21,8 +23,25 @@ The scattered nature of health data, along with the lack of standardization and 
 ## Features
 ![Optional Text](diagram.png)
 
-    
-## Usage
+## Dependencies
+  *  [shutil](https://docs.python.org/3/library/shutil.html)
+  *  [matplotlib](https://matplotlib.org/)
+  *  [scipy](https://scipy.org/)
+  *  [skimage](https://scikit-image.org/)
+  *  [numpy](https://numpy.org/)
+  *  [gc](https://docs.python.org/3/library/gc.html)
+  *  [pandas](https://pandas.pydata.org/)
+  *  [pydicom](https://pydicom.github.io/pydicom/stable/)
+  *  [SimpleITK](https://docs.python.org/3/library/json.html)
+  *  [pynrrd](https://pynrrd.readthedocs.io/en/stable/index.html#)
+
+## Installation
+
+By pulling the latest version from GitHub. Please note that your Python installation should be 3.6 or later. 
+```
+pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
+```
+## Usage and Examples
 
 <pre> /path/to/patient/directories/ 
 ├── 📁patient_id
@@ -67,23 +86,5 @@ The scattered nature of health data, along with the lack of standardization and 
 |   └── ...
 </pre>
 
-## Dependencies
-  *  [shutil](https://docs.python.org/3/library/shutil.html)
-  *  [matplotlib](https://matplotlib.org/)
-  *  [scipy](https://scipy.org/)
-  *  [skimage](https://scikit-image.org/)
-  *  [numpy](https://numpy.org/)
-  *  [gc](https://docs.python.org/3/library/gc.html)
-  *  [pandas](https://pandas.pydata.org/)
-  *  [pydicom](https://pydicom.github.io/pydicom/stable/)
-  *  [SimpleITK](https://docs.python.org/3/library/json.html)
-  *  [pynrrd](https://pynrrd.readthedocs.io/en/stable/index.html#)
-
-## Installation
-
-By pulling the latest version from GitHub. Please note that your Python installation should be 3.6 or later. 
-```
-pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
-```
 ## License 
 This project is provided under the GNU GLPv3 license to preserve open-source access to any derivative works. See the LICENSE file for more information.
