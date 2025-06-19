@@ -20,6 +20,8 @@ Website:  [www.kildealab.com](https://www.kildealab.com)
 ## Motivation
 The scattered nature of health data, along with the lack of standardization and interoperability, limits the potential of Artificial Intelligence (AI) incorporating medical images and radiomics to automate outcomes assessment in radiotherapy (RT) treatments. Establishing a standardized lexicon and data structure could enhance multicenter clinical studies. Our goal is to structure patient data relevant to RT research and create a knowledge base (KB), a machine-readable repository, with an ontology as a domain, including radiomics and medical images.  We aim to identify the essential data elements needed to encode radiomics and dosiomics information and develop an ontology. We are building our study on **Minimal Common Oncology Data Elements (mCODE)**, an international initiative to improve interoperability by establishing a core set of structured data elements. We built an extension to link patients' medical image data, radiomics, and dosiomics with their health records. A review of the existing literature on the standardization of radiomics and dosiomics methods was conducted to include the minimum parameters that would impact their acquisition. We included data elements recommended by the Image Biomarker Standardisation Initiative (IBSI) guidelines. We developed a feature-extractor module, mCODE-MOSAICO, which converts and stores the elements for our extension, automatically extracting the radiomics and dosiomics features from all the interested Region Of Interests (ROIs). 
 
+![Optional Text](diagrams/mCODE_extractor_diagram.png)
+
 ## Features
 ![Optional Text](diagram.png)
 
