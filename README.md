@@ -44,6 +44,9 @@ By pulling the latest version from GitHub. Please note that your Python installa
 pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
 ```
 ## Usage and Examples
+<p align="center">
+<img src="/diagrams/mCODE_Ext_diagram.png" width="500">
+</p>
 
 <pre> /path/to/patient/directories/ 
 ├── 📁patient_id
