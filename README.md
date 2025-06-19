@@ -45,7 +45,7 @@ pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
 ```
 ## Usage and Examples
 <p align="center">
-<img src="/diagrams/mCODE_Ext_diagram.png" width="900">
+<img src="/diagrams/mCODE_Ext_diagram.png" width="1000">
 </p>
 
 <pre> /path/to/patient/directories/ 
