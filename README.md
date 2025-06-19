@@ -23,7 +23,7 @@ The scattered nature of health data, along with the lack of standardization and 
 ![Optional Text](diagrams/mCODE_extractor_diagram.png)
 
 ## Features
-![Optional Text](diagram.png)
+![Optional Text](diagrams/code_diagram.png)
 
 ## Dependencies
   *  [shutil](https://docs.python.org/3/library/shutil.html)
