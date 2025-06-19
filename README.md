@@ -82,12 +82,12 @@ pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
 │              └── ... 
 │ 
 ...
-├── 📁patient_idN
+├── 📁patient_id N
 |   └── ...
 </pre>
 
 ## License 
-This project is provided under the GNU GLPv3 license to preserve open-source access to any derivative works. See the LICENSE file for more information.
+This project is provided under the GNU General Public License version 3 (GPLv3) to preserve open-source access to any derivative works. See the LICENSE file for more information.
 ## References
 * Traverso, A., Wee, L., Dekker, A., & Gillies, R. (2018). Repeatability and Reproducibility of Radiomic Features: A Systematic Review. International journal of radiation oncology, biology, physics, 102(4), 1143–1158. https://doi.org/10.1016/j.ijrobp.2018.05.053
 * Vallières, M., Zwanenburg, A., Badic, B., Cheze Le Rest, C., Visvikis, D., & Hatt, M. (2018). Responsible Radiomics Research for Faster Clinical Translation. Journal of nuclear medicine : official publication, Society of Nuclear Medicine, 59(2), 189–193. https://doi.org/10.2967/jnumed.117.200501
