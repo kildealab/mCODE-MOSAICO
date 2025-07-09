@@ -41,7 +41,7 @@ The scattered nature of health data, along with the lack of standardization and 
 
 By pulling the latest version from GitHub. Please note that your Python installation should be 3.6 or later. 
 ```
-pip install git+https://github.com/kildealab/mCODE-MOSAICO.git
+git clone https://github.com/kildealab/mCODE-MOSAICO
 ```
 ## Usage and Examples
 <p align="center">
