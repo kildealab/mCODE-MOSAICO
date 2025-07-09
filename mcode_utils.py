@@ -25,26 +25,24 @@ from sitk_img_tools import save_dicoms, generate_sitk_image
 from scipy.ndimage import shift
 from matplotlib import ticker
 
+###########################################################
+# UTILS TO GET DICOM TAG INFORMATION 
+############################################################
 
 #GETS THE TAG VALUE FROM THE DICOM 
 def get_dicom_tag_value(dicom, keyword, default=None):
     '''this function will get the dicom tag from the dicom filde for the given tag/code'''
     if isinstance(keyword,str):
         tag_value = dicom.get(keyword,None)
-        
         if tag_value is None:
             return default
-    
     else: 
         tag_value = dicom.get(keyword,None).value
-
     return tag_value
 
-
 #WITH THIS CODE WE ARE READING THE IMAGE STUDY DICOM METADATA AND STRUCTURING IT!
-#THE INFROMATION IS PART OF THE MCODE MEDICAL IMAGES EXTENSION
+#THE INFORMATION IS PART OF THE MCODE MEDICAL IMAGES EXTENSION
 def get_img_study(path,dicom):
-    
     tag_label_list = ['Date of Imaging',"Image Modality", "Image Identifier","Body Site","Body Structure or Part","Series Date","Study Description","Reason"]
     img_study = {}
     img_study_keywords = ['SeriesDate','Modality','StudyInstanceUID','AnatomicRegionSequence',"BodyPartExamined", "SeriesDate", 'StudyDescription',
@@ -54,32 +52,27 @@ def get_img_study(path,dicom):
         if isinstance(tag_label_list[label], list):
             img_study[tag_label_list[label]] = {}
             for word in range(1,len(img_study_keywords[label])):
-               
                 img_study[tag_label_list[label][0]][tag_label_list[label][word]]= str(get_dicom_tag_value(dicom,img_study_keywords[label][word-1]))
         else:
-            
             img_study[tag_label_list[label]] = str(get_dicom_tag_value(dicom,img_study_keywords[label]))
     
     return img_study
 
-#FUNCTION GETS THE PATIENT DATA FROM THE DCM FILES THAT ARE COMPLIANT WITH MCODE
+#FUNCTION GETS THE PATIENT DATA FROM THE DCM FILES THAT ARE COMPLIANT WITH mCODE
 def get_pat_data_in_dcm(path,dicom):
     pat_keywords=['PatientName','PatientBirthDate','PatientSex',
                 'EthnicGroup','PatientAge','PatientWeight']
     
     pat_labels=["Patient Name","Patient's Birth Date","Patient's Sex",
                 "Patient's Ethnic Group","Patient's Age","Patient's Weight"]
-    
     patient_data = {}
     for keyword in range(0,len(pat_keywords)):
-       
         patient_data[pat_labels[keyword]] = str(get_dicom_tag_value(dicom,pat_keywords[keyword]))
         
     return patient_data
 
 #GETS THE ACQUISITION ATTRIBUTES OF MEDICAL IMAGES (PART OF THE MEDICAL IMAGES MCODE EXTENSION)
 def get_acq_tags(path,dicom):
-    
     acquisition_dict = {"Imaging Protocol": str(get_dicom_tag_value(dicom,'PerfomedCodeSequenceAttribute')) 
                         +'\n' + str(get_dicom_tag_value(dicom,'CodeMeaning'))}
             
@@ -115,7 +108,6 @@ def get_acq_tags(path,dicom):
 #THIS INFORMATION IS PART OF OUR MCODE EXTENSION
 def recon_parameters(path,dicom):
     recon_dict = {}
-    
     recon_labels = ["Image Type","Slice Thickness (mm)","Slice Spacing (mm)", 
                 "Pixel Spacing (mm)", ["Reconstruction Technique","Method","Algoritihm"],
                 "Convolution Kernel"]
@@ -134,7 +126,8 @@ def recon_parameters(path,dicom):
              recon_dict[recon_labels[label]] = str(get_dicom_tag_value(dicom,recon_keywords[label]))
                 
     return recon_dict
-#GETS THE TAGS OF INTEREST FOR THE CT IMAGE (PART OF THE MCODE EXTENSION)
+    
+#GETS THE TAGS OF INTEREST FOR THE CT IMAGE (PART OF THE mCODE EXTENSION)
 def get_ct_tags(path,dicom):
     ct_dict = {}
    
@@ -154,15 +147,13 @@ def get_ct_tags(path,dicom):
                # "Series Instance UID": str(dicom.SeriesInstanceUID),
             
     for keyword in range(0,len(ct_tags)):
-       
         ct_dict[ct_labels[keyword]] = str(get_dicom_tag_value(dicom,ct_tags[keyword]))
         
     return ct_dict
     
     
 #MRI INFORMATION OF INTEREST FROM THE DICOM FILE
-#REQUIRED INFORMATION FOR THE MCODE EXTENSION
-
+#REQUIRED INFORMATION FOR THE mCODE EXTENSION
 def get_mri_tags(path,dicom):
     mri_dict = {}
    
@@ -172,12 +163,13 @@ def get_mri_tags(path,dicom):
     mri_labels = ["Image Type","Scanning Sequence Acquired","Magnetic Field Strength",
                 "Repetition Time","Echo Time","Echo Time Length","Inversion Time",
                 "Flip Angle","Number of Excitations","k-Space Trajectory"]
+    
     for keyword in range(0,len(mri_tags)):
-      
         mri_dict[mri_labels[keyword]] = str(get_dicom_tag_value(dicom,mri_tags[keyword]))
     
     return mri_dict
-#PET INFORMATION TO EXTRACT THE MCODE INFORMATION EXTRACTION
+    
+#PET INFORMATION TO EXTRACT THE mCODE INFORMATION EXTRACTION
 def get_pet_tags(dicom):
     pet_dict = {}
    
@@ -194,7 +186,6 @@ def get_pet_tags(dicom):
             pet_dict[pet_labels[label][0]] = {}
             for word in range(1,len(pet_labels[label])):
                 if isinstance(pet_tags[label][word-1], list):
-                    #print(pet_tags[label][word-1])
                     count = 0
                     for word2 in range(0,len(pet_tags[label][word-1])):
                         
@@ -216,7 +207,6 @@ def get_pet_tags(dicom):
                     continue
                 elif count0==len(pet_tags[label]):
                     pet_dict[pet_labels[label]] = None 
-                
                 else:
                     pet_dict[pet_labels[label]] = str(get_dicom_tag_value(dicom,pet_tags[label][word])) 
         else:
@@ -227,11 +217,9 @@ def get_pet_tags(dicom):
 ############################################################################
 # UTILS FOR THE RADIOMICS AND DOSIOMICS EXTRACTION
 # NRRD CONVERSION, DOSE MAP EXTRACTION AND RT STRUCTURES
-
-################################3
+############################################################################
 
 #GETS THE FORMAT OF THE MEDICAL IMAGES EITHER DCM, NII OR NRRD
-
 def get_set_images(dir_image_path):
     format_image = os.listdir(dir_image_path)[0].split('.')[-1]
     if format_image=='dcm':
@@ -256,17 +244,12 @@ def get_set_images(dir_image_path):
     else:
         return []
 
-            
-
-
 #IT GETS THE MASKS WHEN THEY ARE SAVED IN NII.GZ
 def get_set_masks(dir_mask_path,ROI):
-    
     mask_files = sorted([os.path.join(dir_mask_path, x) for x in os.listdir(dir_mask_path) if '.nii.gz' in x])
 
     return
-
-
+    
 #GET THE RD DCM FILE
 def get_set_RD(dir_image_path):
     format_image = os.listdir(dir_image_path)[0].split('.')[-1]
@@ -322,11 +305,9 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
         
         if seq.ROIName == ROI_name:
             roi_seq = RS.ROIContourSequence[i]
-            
             roi_contour_seq = roi_seq.ContourSequence
          
     slice_numbers = set()
- 
     slice_to_contour_seq = dict() # maps slice # to structure contour sequence
     slices_id = []
     for contour_seq in roi_contour_seq:
@@ -346,11 +327,8 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
     #USUALLY THE IMAGES ARE REGISTERED HAVING THE SAME SIZE #IF NOT, THE POSITION OF THE CONTOURS SHOULD BE ALIGNED
 
     for slicei in range(0,len(slices)): #READING THE SLICES 
-       
         if slicei in slices_id:
-            
             slice_new = np.array(slice_to_contour_seq[slicei].ContourData).reshape((-1,3))
-            
             start_x2, start_y2, start_z2, pixel_spacing2 = get_start_position_dcm(image_files)
             coords_px = get_mask_nifti(slice_new,start_x2,start_y2,pixel_spacing2)
             
@@ -359,7 +337,6 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
             
         mask = np.zeros(np.array(ds0.pixel_array).shape)
         if coords_px!=None:
-            
             rows,cols = polygon(coords_px[1],coords_px[0])
             mask[rows,cols] = 1            
     
@@ -378,7 +355,6 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
 
 #THIS SAVES THE IMAGE NII AS NRRD
 def save_img_nii_as_nrrd(set_image,save_path,image_name):
-    
     images = sitk.GetArrayFromImage(set_image)
     pixels_dimensions = (int(images.shape[1]),int(images.shape[2]),int(images.shape[0]))
     array_dicom = np.zeros(pixels_dimensions)
@@ -401,9 +377,7 @@ def save_img_nii_as_nrrd(set_image,save_path,image_name):
 
 #GET IMAGE FROM DCM TO NRRD
 def save_img_dcm_as_nrrd(set_images, dcm_save_path,image_name):
-
     data_3d = None
-
     dicom_files = set_images
     ds0= set_images[0]
 
@@ -431,11 +405,9 @@ def save_img_dcm_as_nrrd(set_images, dcm_save_path,image_name):
         print("--------------------------------------------------------")
          
     return
-
     
 #SAVES RT DOSE AS NRRD FILE
 #TO DO: ADD THE DATE!
-
 def save_RT_dose_as_nrrd(rt_dose,set_images,dcm_save_path):
     data_3d = None
 
@@ -510,57 +482,6 @@ def get_start_position_dcm(slices):
     
     return start_x, start_y, start_z, pixel_spacing 
 
-#FUNCTION TO RESAMPLE AND RESIZING THE DOSE MAP DISTRIBUTION
-#IT RECEIVED THE DOSE MAP (dsDose), number of the slices in the image
-#THE SET OF CT ARRAYS (ctArray) in pixel array, and dsCTs (DICOM information image)  
-def resample_dose_dist(dsDose,number_slices,dsCTs,ctArray):
-    ctArray = np.array(ctArray)
-    pixel_spacing = dsCTs[0].PixelSpacing #get pixel spacing [#horizontal pixels, #vertical pixels]
-    doseArray   = dsDose.pixel_array * dsDose.DoseGridScaling #Scale the pixel values with the DoseScale values
-    assert doseArray.shape[0] == float(dsDose.NumberOfFrames) #check dimension
-    #Define new dose spacing 
-    doseSpacing = [float(each) for each in dsDose.PixelSpacing] + [float(dsCTs[0].SliceThickness)]
-    #Define the dose position of the patients int the dose map
-    doseImagePositionPatient = [float(each) for each in dsDose.ImagePositionPatient]
-    #Define spacing of the CT
-    ctSpacing = [float(each) for each in dsCTs[0].PixelSpacing] + [float(dsCTs[0].SliceThickness)]
-    
-    resample_set = []
-    #resample each slice
-    for slicei in doseArray:
-        #WE CONVERT EACH SLICE TO AN IMAGE FROM THE ARRAY USING SITK TO RESAMPLE AND RESIZE
-        doseImage = sitk.GetImageFromArray(slicei)
-        #WE SET THE NEW SPACING
-        doseImage.SetSpacing(doseSpacing) 
-        resampler = sitk.ResampleImageFilter()
-        resampler.SetOutputSpacing(ctSpacing) #set new spacing
-        #GET THE CT ARRAY SHAPE WITH NUMPY
-        resampler.SetSize(ctArray.shape[::-1]) # SimpleITK convention: [HEIGHT,WIDTH,Slices], numpy convention: [Slices,HEIGHT,WIDTH]
-        resampled_image = resampler.Execute(doseImage) #resample the dose slice
-        #WE GET AN ARRAY FROM THE IMAGE USING SITK
-        doseArrayResampled = sitk.GetArrayFromImage(resampled_image)
-        
-        ctImagePositionPatientMin = [float(each) for each in dsCTs[0].ImagePositionPatient]
-        ctImagePositionPatientMax = [float(each) for each in dsCTs[-1].ImagePositionPatient]
-        #re escale and shift the pixels position to have the equivalent dimension
-        dx, dy, dz = ((np.array(doseImagePositionPatient) - np.array(ctImagePositionPatientMax)) / np.array(ctSpacing)).astype(int)
-    
-        doseArrayResampled = shift(doseArrayResampled, (dy, dx)) #shift using the sITK format
-        resample_set.append(doseArrayResampled) 
-        
-    doseImage2 = sitk.GetImageFromArray(np.array(resample_set)) #transform to image again
-
-    doseImage2.SetSpacing(ctSpacing) #set spacing in 3D with the same slice thickness
-    resampler = sitk.ResampleImageFilter()
-    resampler.SetOutputSpacing(ctSpacing)
-    
-    resampler.SetSize(ctArray.shape[::-1])
-    resampled_image2 = resampler.Execute(doseImage2)
-    doseArrayResampled2 = sitk.GetArrayFromImage(resampled_image2)
-    
-    return doseArrayResampled2
-      
-
 #FUNCTION TO VISUALIZE DOSE MAP+CT MEDICAL IMAGE + SEGMENTATION
 def data_visualize(dose_img,slices,seg):
     doseArrayResampled = sitk.GetArrayFromImage(dose_img)
@@ -577,77 +498,6 @@ def data_visualize(dose_img,slices,seg):
 def get_settings(param_files):
     return
 
-
-    
-#GET RADIOMICS FUNCTION, WITH METHOD AS INPUT TO GET THE FEATURES SEGMENTATION BASED OR VOXEL BASED
-#FOR VOXEL BASED IT RETURNS THE FEATURE MAP.
-def get_radiomics(method,imageName,maskName,ROIName,path_radiomics):
-    
-    software_version = radiomics.__version__
-    parameters = os.path.abspath(os.path.join('Params.yaml'))
-                          
-    #params = os.path.join(dataDir, "examples", "exampleSettings", "Params.yaml")
-    extractor = featureextractor.RadiomicsFeatureExtractor(parameters)
-    featureClasses = getFeatureClasses()
-    #featureVector = extractor.execute(image,image)
-    
-    #TO DO: reshape the feature map
-    if method=='voxel':                
-        featureVector = extractor.execute(imageName, maskName, voxelBased=True)
-        for key, val in six.iteritems(featureVector):
-            if isinstance(val, sitk.Image):  # Feature map
-                sitk.WriteImage(val, path_radiomics+'/voxel_based/'+key + '.nrrd', True) #SAVE THE FEATURE MAP
-                print("Stored feature %s in %s at 'radiomics/voxel_based/'" % (key, key + ".nrrd"))
-                    
-    else: #Get RADIOMICS SEGMENTATION BASED
-        featureVector = extractor.execute(imageName, maskName)
-        feature_dict = {'ROI Name': ROIName}
-        parameters_dict= {}
-    
-        features_names = []
-        keys_features = list(extractor.enabledFeatures.keys())
-        for i,featureName in enumerate(featureVector.keys()):
-            if featureName.split('_')[1] in keys_features:
-                feature_dict[featureName] = float(featureVector[featureName])
-        with open(path_radiomics+'seg_'+ROIName+"_radiomics.json", "w") as outfile: 
-        #FEATURE JSON FILE SAVE IN THE RADIOMICS FOLDER PER PATIENT AND IMAGE STUDIED
-                json.dump(feature_dict, outfile,indent=4)
-    return  
-
-#FUNCTION TO EXTRACT THE DOSIOMICS INFORMATION FROM A GIVEN ROI NAME
-def get_dosiomics(method,imageName,maskName,ROIName,path_dosiomics):
-    
-    software_version = radiomics.__version__
-    parameters = os.path.abspath(os.path.join('Params.yaml'))
-                          
-    #params = os.path.join(dataDir, "examples", "exampleSettings", "Params.yaml")
-    extractor = featureextractor.RadiomicsFeatureExtractor(parameters)
-    featureClasses = getFeatureClasses()
-    #featureVector = extractor.execute(image,image)
-    
-    #TO DO: reshape the feature map
-    if method=='voxel':                
-        featureVector = extractor.execute(imageName, maskName, voxelBased=True)
-        for key, val in six.iteritems(featureVector):
-            if isinstance(val, sitk.Image):  # Feature map
-                sitk.WriteImage(val, path_radiomics+'/voxel_based/'+key + '.nrrd', True) #SAVE THE FEATURE MAP
-                print("Stored feature %s in %s at 'dosiomics/voxel_based/'" % (key, key + ".nrrd"))
-                    
-    else: #Get DOSIOMICS SEGMENTATION BASED
-        featureVector = extractor.execute(imageName, maskName)
-        feature_dict = {'ROI Name': ROIName}
-        parameters_dict= {}
-    
-        features_names = []
-        keys_features = list(extractor.enabledFeatures.keys())
-        for i,featureName in enumerate(featureVector.keys()):
-            if featureName.split('_')[1] in keys_features:
-                feature_dict[featureName] = float(featureVector[featureName])
-        with open(path_dosiomics+'Seg_'+ROIName+"_dosiomics.json", "w") as outfile: 
-        #FEATURE JSON FILE SAVE IN THE RADIOMICS FOLDER PER PATIENT AND IMAGE STUDIED
-                json.dump(feature_dict, outfile,indent=4)
-    return 
-    
 def get_dosimetricfeatures():
   return
     
@@ -665,13 +515,12 @@ def get_data_from_documents(path,type):
         
     return
     
-###############
+#####################################################
 #  SAVE JSON FILES
-###############
+#####################################################
     
 #SAVE THE JSON FILES FOR A GIVEN PATH TO SAVE (PATH_SAVE), FOR A GIVEN DICOM IMAGE
 def save_JSON_attributes(path_save,path,dicom):
-
     img_study_dict = get_img_study(path,dicom)
     with open(path_save+"/image_study_attributes.json", "w") as outfile: 
         json.dump(img_study_dict, outfile,indent=4)
@@ -710,9 +559,9 @@ def save_JSON_attributes(path_save,path,dicom):
             
 
 
-###################
+#################################################
   #  UTILS TO CREATE AND SAVE THE PATHS FOR EACH PATIENT
-############
+#################################################
 
 #CREATE THE FOLDER FOR THE GIVEN PATIENT USING THE MRN
 def create_patient_folder(folder_path):
@@ -727,9 +576,8 @@ def create_patient_folder(folder_path):
         os.mkdir(folder_path)
         print(f"Folder created sucessfully")
         #return folder_path
-    
 
-#IT COPIES THE ORIGINAL DIRECTORY NAMES WITHOUR THE FILES IN IT, ONLY THE LINK PATHS OF THE FOLDERS. 
+#IT COPIES THE ORIGINAL DIRECTORY NAMES WITHOUT THE FILES IN IT, ONLY THE LINK PATHS OF THE FOLDERS. 
 def copy_paths(source_folder):
     paths = []
    
@@ -761,7 +609,7 @@ def create_folder(folder_path):
         os.mkdir(folder_path)
         print(f"Folder created sucessfully")
         print('\n')
-        
+    
 def get_folders_in_directory(directory_path):
     """
     Returns a list of folder names present in the given directory.
@@ -770,7 +618,6 @@ def get_folders_in_directory(directory_path):
     return folder_list
     
 def get_dict_paths(directory_path,paths_dict,folders):
-    #while len(folders)!=0:
     for folder in folders:
         directory_path2= directory_path+'/'+folder
         last_format = directory_path2.split('.')[-1]
@@ -804,8 +651,8 @@ def create_folder_per_path(save_path,paths_dict,folders):
         
         create_folder_per_path(new_path,paths_dict,folders2)
 
-#FUNCTION TO PERFOM THE EXTRACTION DATA OF ALL THE PATIENTS
-def clone_folders_per_patient_v1(path_patient,path_save):
+#FUNCTION TO PERFORM THE EXTRACTION OF DATA OF ALL THE PATIENTS
+def clone_folders_per_patient(path_patient,path_save):
     directory_path = path_patient
     folders = sorted(get_folders_in_directory(directory_path))
       
@@ -845,12 +692,6 @@ def create_folders_main_folders_per_patient(folder_path,new_path_save_images,fol
     create_folder(new_path_save_images)
     create_folder(folder_path_radiomics)
     create_folder(folder_path_dosiomics)
-    
-
-def get_radiomics_dosiomics(imageName,maskName,ROIname,path_radiomics,path_dosiomics):
-    get_radiomics('segmentation',imageName,maskName,ROIname,path_radiomics)
-    get_dosiomics('segmentation',imageName,maskName,ROIname,path_dosiomics) 
-    return
 
 def get_all_folder_images(path_patient):
     folder_path_images = sorted(copy_paths(path_patient))
@@ -881,37 +722,6 @@ def isCBCT(set_images):
     except:
         return False
  
-def save_dicom_attributes_and_volume(folder_image,new_path_save_images):
-    #CREATING FOLDER FOR THE SPECIFIC PATIENT
-    #GETTING SET OF IMAGES FROM THE PATH OF THE DATA
-
-    name_folder = folder_image.split('/')[-1]
-    set_images = get_set_images(folder_image)
-    
-    if len(set_images)!=0:
-        if isCBCT(set_images)==True:
-            try:
-                image_name = set_images[0].ContentDate+'_CBCT' #DEFINE THE FOLDER NAME FOR THE MODALITY
-            except:
-                image_name = set_images[0].SeriesDate+'_CBCT'
-        
-        else: 
-            try:
-                image_name = set_images[0].ContentDate+'_'+set_images[0].Modality #DEFINE THE FOLDER NAME FOR THE MODALITY
-            except:
-                image_name = set_images[0].SeriesDate+'_'+set_images[0].Modality
-             
-    new_folder_name = new_path_save_images+'/'+image_name
-    create_folder(new_folder_name)
-    save_JSON_attributes(new_folder_name,folder_image,set_images[0])
-    save_img_dcm_as_nrrd(set_images, new_folder_name,image_name)
-
-def create_ROI_folders(RS_file_path,folder_path_radiomics):
-    ROI_names = get_ROI_keys(RS_file_path)
-    for ROI in ROI_names:
-        new_folder = folder_path_radiomics+'/'+ROI+'_radiomics'
-        create_folder(new_folder)
-      
 
 #########################
 
