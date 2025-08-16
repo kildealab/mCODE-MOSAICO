@@ -10,8 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage.draw import polygon
 import random
-from Registration.registration_core import find_registration_file_two_images, register_two_images
-from sitk_img_tools import save_dicoms, generate_sitk_image
+
 import SimpleITK as sitk
 import six
 import nrrd
@@ -19,8 +18,6 @@ import nrrd
 from radiomics import featureextractor, getFeatureClasses
 from skimage.draw import polygon
 
-from Registration.registration_core import find_registration_file_two_images, register_two_images
-from sitk_img_tools import save_dicoms, generate_sitk_image
 
 from scipy.ndimage import shift
 from matplotlib import ticker
@@ -214,306 +211,7 @@ def get_pet_tags(dicom):
     
     return pet_dict
 
-############################################################################
-# UTILS FOR THE RADIOMICS AND DOSIOMICS EXTRACTION
-# NRRD CONVERSION, DOSE MAP EXTRACTION AND RT STRUCTURES
-############################################################################
 
-#GETS THE FORMAT OF THE MEDICAL IMAGES EITHER DCM, NII OR NRRD
-def get_set_images(dir_image_path):
-    format_image = os.listdir(dir_image_path)[0].split('.')[-1]
-    if format_image=='dcm':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x])
-        slices = [dcm.dcmread(j, force=True) for j in img_files]
-        try:
-            slice_filtered = [i for i in slices if i.Modality in ['CT','CBCT','CBCT_SCAN','MR','PT']]
-            return slice_filtered
-        except:
-#CHECKING THAT IF THE UID IS NOT AVAILABLE THE TAG MODALITY IS ANOTHER WAY TO GET THE TYPE OF DCM IMAGE         
-            CT = '1.2.840.10008.5.1.4.1.1.2'
-            MR = '1.2.840.10008.5.1.4.1.1.4'
-            PT = '1.2.840.10008.5.1.4.1.1.128'
-            slice_filtered = [i for i in slices if i[0x0008, 0x0016].value in [CT, MR,PT]]
-            return slice_filtered   
-    elif format_image=='nii':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nii' in x])
-        return img_files
-    elif format_image=='nrrd':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
-        return img_files
-    else:
-        return []
-
-#IT GETS THE MASKS WHEN THEY ARE SAVED IN NII.GZ
-def get_set_masks(dir_mask_path,ROI):
-    mask_files = sorted([os.path.join(dir_mask_path, x) for x in os.listdir(dir_mask_path) if '.nii.gz' in x])
-
-    return
-    
-#GET THE RD DCM FILE
-def get_set_RD(dir_image_path):
-    format_image = os.listdir(dir_image_path)[0].split('.')[-1]
-    if format_image=='dcm':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x])
-        slices = [dcm.dcmread(j, force=True) for j in img_files]
-        try:
-            slice_filtered = [i for i in slices if i.Modality=='RTDOSE']
-            return slice_filtered
-        except:
-            RT = '1.2.840.10008.5.1.4.1.1.481.2'
-            slice_filtered = [i for i in slices if i[0x0008, 0x0016].value==RT]
-            return slice_filtered   
-    elif format_image=='nii':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nii' in x])
-        return img_files
-    elif format_image=='nrrd':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
-        return img_files
-        
-        
-def get_set_RS(dir_image_path):
-    format_image = os.listdir(dir_image_path)[0].split('.')[-1]
-    if format_image=='dcm':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x])
-        slices = [dcm.dcmread(j, force=True) for j in img_files]
-        try:
-            slice_filtered = [i for i in slices if i.Modality=='RTSTRUCT']
-            return slice_filtered
-        except:
-            RT = '1.2.840.10008.5.1.4.1.1.481.3'
-            slice_filtered = [i for i in slices if i[0x0008, 0x0016].value==RT]
-            return slice_filtered   
-    elif format_image=='nii':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nii' in x])
-        return img_files
-    elif format_image=='nrrd':
-        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
-        return img_files
-
-
-#THIS FUNCTION SAVES THE RT STRUCTURE FROM DCM TO NRRD 3D FILE
-#FUNCTION TO GET THE CONTOUR FROM THE ROI_NAME 
-#RECEIVES THE RS DICOM FILE (RT STRUCTURE) PATH
-#IMAGE FILES (SET OF NP ARRAYS OF THE IMAGES)
-def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_path):
-    RS = dcm.read_file(RS_file_path)
-    slices = image_files.copy()
-    contour_coords = []
-
-    roi_contour_seq = None
-    for i, seq in enumerate(RS.StructureSetROISequence):
-        
-        if seq.ROIName == ROI_name:
-            roi_seq = RS.ROIContourSequence[i]
-            roi_contour_seq = roi_seq.ContourSequence
-         
-    slice_numbers = set()
-    slice_to_contour_seq = dict() # maps slice # to structure contour sequence
-    slices_id = []
-    for contour_seq in roi_contour_seq:
-        # uid of slice that this contour appears on
-        slice_uid = contour_seq.ContourImageSequence[0].ReferencedSOPInstanceUID
-        # find that corresponding slice in the files
-
-        for i, ct_file in enumerate(image_files):
-            if ct_file.SOPInstanceUID == slice_uid:
-            
-                slice_to_contour_seq[i] = contour_seq
-                slices_id.append(i)    
-   
-    pixel_spacing = (float(ds0.PixelSpacing[0]),float(ds0.PixelSpacing[1]),float(ds0.SliceThickness)) #DESIRE PIXEL SPACING AND VOLUME
-    pixels_dimensions = (int(ds0.Rows),int(ds0.Columns),len(dicom_files))  #DESIRE IMAGE SIZE
-    mask_full = np.zeros(pixels_dimensions,dtype=ds0.pixel_array.dtype) #SET A BLANK MASK WITH THE SIZE OF THE IMAGE OF REFERENCE
-    #USUALLY THE IMAGES ARE REGISTERED HAVING THE SAME SIZE #IF NOT, THE POSITION OF THE CONTOURS SHOULD BE ALIGNED
-
-    for slicei in range(0,len(slices)): #READING THE SLICES 
-        if slicei in slices_id:
-            slice_new = np.array(slice_to_contour_seq[slicei].ContourData).reshape((-1,3))
-            start_x2, start_y2, start_z2, pixel_spacing2 = get_start_position_dcm(image_files)
-            coords_px = get_mask_nifti(slice_new,start_x2,start_y2,pixel_spacing2)
-            
-        else:
-            coords_px = None
-            
-        mask = np.zeros(np.array(ds0.pixel_array).shape)
-        if coords_px!=None:
-            rows,cols = polygon(coords_px[1],coords_px[0])
-            mask[rows,cols] = 1            
-    
-        mask_full[:,:,slicei] = mask        
-    
-    mask_full_v2= np.swapaxes(mask_full, 0, 1)
-    try:
-      nrrd.write(RS_save_path+'/seg_'+ROI_name+'.nrrd', mask_full_v2)
-      print("--------------------------------------------------------")
-      print(f"-   Wrote nrrd file for RT structure {ROI_name} file sef_"+ROI_name+" to {RS_save_path}   -")
-      print("--------------------------------------------------------") 
-    except:
-      print("--------------------------------------------------------")
-      print(f"-   Failed to write nrrd for RT structure {ROI_name} file sef_"+ROI_name+" to {RS_save_path}   -")
-      print("--------------------------------------------------------")   
-
-#THIS SAVES THE IMAGE NII AS NRRD
-def save_img_nii_as_nrrd(set_image,save_path,image_name):
-    images = sitk.GetArrayFromImage(set_image)
-    pixels_dimensions = (int(images.shape[1]),int(images.shape[2]),int(images.shape[0]))
-    array_dicom = np.zeros(pixels_dimensions)
-
-    for image in range(0,len(images)):
-      # IT CONCATENATES THE LAYER BBY LAYER (SLICE BY SLICE)
-      array_dicom[:,:,image] = images[image]
-    data_3d = np.swapaxes(array_dicom, 0, 1)
-    
-    try:
-        nrrd.write(save_path+'/'+image_name+'.nrrd', data_3d)  
-        print("--------------------------------------------------------")
-        print(f"-   Wrote nrrd file {image_name} to {save_path}   -")
-        print("--------------------------------------------------------")
-    except:
-        print("--------------------------------------------------------")
-        print(f"-   Failed to write nrrd file {image_name} to {save_path}   -")
-        print("--------------------------------------------------------")
-
-
-#GET IMAGE FROM DCM TO NRRD
-def save_img_dcm_as_nrrd(set_images, dcm_save_path,image_name):
-    data_3d = None
-    dicom_files = set_images
-    ds0= set_images[0]
-
-    pixel_spacing = (float(ds0.PixelSpacing[0]),float(ds0.PixelSpacing[1]),float(ds0.SliceThickness))
-    pixels_dimensions = (int(ds0.Rows),int(ds0.Columns),len(dicom_files))
-    array_dicom = np.zeros(pixels_dimensions,dtype=ds0.pixel_array.dtype)
-
-    slices = [j for j in set_images]
-    slices.sort(key = lambda x: (x.InstanceNumber))
-              
-    for dicom_file in slices:
-        array_dicom[:,:,slices.index(dicom_file)] = dicom_file.pixel_array
-
-    # transpose the data
-    data_3d = np.swapaxes(array_dicom, 0, 1)
-    
-    try:
-        nrrd.write(dcm_save_path+'/'+image_name+'.nrrd', data_3d)  
-        print("--------------------------------------------------------")
-        print(f"-   Wrote nrrd file {image_name} to {dcm_save_path}   -")
-        print("--------------------------------------------------------")
-    except:
-        print("--------------------------------------------------------")
-        print(f"-   Failed to write nrrd file {image_name} to {dcm_save_path}   -")
-        print("--------------------------------------------------------")
-         
-    return
-    
-#SAVES RT DOSE AS NRRD FILE
-#TO DO: ADD THE DATE!
-def save_RT_dose_as_nrrd(rt_dose,set_images,dcm_save_path):
-    data_3d = None
-
-    dicom_files = set_images
-    ds0= dcm.dcmread(set_images[0], force=True)
-
-    pixel_spacing = (float(ds0.PixelSpacing[0]),float(ds0.PixelSpacing[1]),float(ds0.SliceThickness))
-    pixels_dimensions = (int(ds0.Rows),int(ds0.Columns),len(dicom_files))
-    array_dicom = np.zeros(pixels_dimensions,dtype=ds0.pixel_array.dtype)
-
-    for data in range(0,len(rt_dose)):
-        array_dicom[:,:,data] = rt_dose[data]
-
-    # transpose the data
-    data_3d = np.swapaxes(array_dicom, 0, 1)
-    try:
-        nrrd.write(dcm_save_path+'/doseMap.nrrd', data_3d)
-
-        print(f"Wrote Dose Map nrrd file {image_name} to {dcm_save_path}")
-    except:
-        print(f"Failed to write Dose Map nrrd file {image_name} to {dcm_save_path}")
-    
-    return
-   
-#FUNCTION TO GET THE KEYS FOR EACH NAME ROI
-def get_ROI_keys(RS_file_path):  #ROI Name different from the PTV
-    RS_file = dcm.read_file(RS_file_path)
-    contour_keys = RS_file.StructureSetROISequence
-    return [str(x.ROIName) for x in contour_keys]
-
-#FUNCTION TO GET THE KEY NAME FOR THE PTV RELATED ELEMENTS
-def get_PTV_keys(RS_file_path): 
-    ROI_keys = get_ROI_keys(RS_file_path)
-    return [x for x in ROI_keys if 'ptv' in x.lower()]
-
-#FUNCTION TO GET THE KEY NAME FOR THE GTV RELATED ELEMENTS
-
-def get_GTV_keys(RS_file_path): 
-    ROI_keys = get_ROI_keys(RS_file_path)
-    return [x for x in ROI_keys if 'gtv' in x.lower()]
-
-#FUNCTION TO GET THE KEY NAME FOR THE CTV  
-#IN CASE THAT THERE ARE MORE THAN ONE CTV KEY (E.G. CTV_5MM) THE RADIOMICS/DOSIOMICS CAN BE EXTRACTED FOR ALL OF THEM
-def get_CTV_keys(RS_file_path): 
-    ROI_keys = get_ROI_keys(RS_file_path)
-    return [x for x in ROI_keys if 'ctv' in x.lower()]
-    
-
-def get_mask_nifti(roi_array,start_x,start_y,pixel_spacing):
-    '''
-    Get the pixel positions (rather than the x,y coords) of the contour array so it can be plotted.
-    '''
-    x = []
-    y = []
-    
-    for i in range(0,len(roi_array)):
-        x.append((roi_array[i][0]/pixel_spacing[0]) - start_x/pixel_spacing[0])
-        y.append((roi_array[i][1]/pixel_spacing[1]) - start_y/pixel_spacing[1])
-        
-    return x, y
-    
-#THIS FUNCTION GETS THE IMAGE PATIENT POSITIONING FROM THE IMAGE 
-def get_start_position_dcm(slices):
-    positions = []
-    for f in slices:             
-        positions.append(f.ImagePositionPatient)
-    positions = sorted(positions, key=lambda x: x[-1])
-    start_z = positions[0][2]
-    start_x = positions[0][0]
-    start_y = positions[0][1]
-    pixel_spacing = f.PixelSpacing
-    
-    return start_x, start_y, start_z, pixel_spacing 
-
-#FUNCTION TO VISUALIZE DOSE MAP+CT MEDICAL IMAGE + SEGMENTATION
-def data_visualize(dose_img,slices,seg):
-    doseArrayResampled = sitk.GetArrayFromImage(dose_img)
-    dose_min = np.min(doseArrayResampled)
-    dose_max = np.max(doseArrayResampled)
-    locator = ticker.MaxNLocator(11,min_n_ticks=10)
-    dose_levels = locator.tick_values(dose_min,dose_max)
-    plt.imshow(slices[75].pixel_array, cmap='gray')
-    plt.imshow(doseArrayResampled[75],cmap=plt.cm.plasma,alpha=.5)
-    plt.contour(sitk.GetArrayFromImage(seg)[75,:,:], colors='red', linewidths=0.4)
-    return
-    
-
-def get_settings(param_files):
-    return
-
-def get_dosimetricfeatures():
-  return
-    
-def get_data_from_csv(path):
-    return
-
-def set_default(obj):
-    if isinstance(obj, set):
-        return list(obj)
-    raise TypeError
-    
-def get_data_from_documents(path,type):
-    if type=='csv':
-        get_data_from_csv(path)
-        
-    return
     
 #####################################################
 #  SAVE JSON FILES
@@ -525,9 +223,9 @@ def save_JSON_attributes(path_save,path,dicom):
     with open(path_save+"/image_study_attributes.json", "w") as outfile: 
         json.dump(img_study_dict, outfile,indent=4)
     
-    print('---')
+    print('-------------------------------------------')
     pat_data_dict = get_pat_data_in_dcm(path,dicom)
-    print('---')
+    print('-------------------------------------------')
     print(pat_data_dict)
     with open(path_save+"/cancer_patient_attributes.json", "w") as outfile: 
         json.dump(pat_data_dict, outfile,indent=4)
@@ -696,19 +394,25 @@ def create_folders_main_folders_per_patient(folder_path,new_path_save_images,fol
 def get_all_folder_images(path_patient):
     folder_path_images = sorted(copy_paths(path_patient))
     return folder_path_images
-    
+
 def save_dicom_attributes_and_volume(folder_image,new_path_save_images):
     #CREATING FOLDER FOR THE SPECIFIC PATIENT
     #GETTING SET OF IMAGES FROM THE PATH OF THE DATA
 
     name_folder = folder_image.split('/')[-1]
     set_images = get_set_images(folder_image)
-         
+    
     if len(set_images)!=0:
-        try:
-            image_name = set_images[0].ContentDate+'_'+set_images[0].Modality #DEFINE THE FOLDER NAME FOR THE MODALITY
-        except:
-            image_name = set_images[0].SeriesDate+'_'+set_images[0].Modality
+        if isCBCT(set_images)==True:
+            try:
+                image_name = set_images[0].ContentDate+'_CBCT' #DEFINE THE FOLDER NAME FOR THE MODALITY
+            except:
+                image_name = set_images[0].SeriesDate+'_CBCT'
+        else: 
+            try:
+                image_name = set_images[0].ContentDate+'_'+set_images[0].Modality #DEFINE THE FOLDER NAME FOR THE MODALITY
+            except:
+                image_name = set_images[0].SeriesDate+'_'+set_images[0].Modality
              
     new_folder_name = new_path_save_images+'/'+image_name
     create_folder(new_folder_name)
@@ -723,31 +427,4 @@ def isCBCT(set_images):
         return False
  
 
-#########################
-
-if __name__ == "__main__":
-    
-    #SPECIFYING PATH IN THE CODE
-    path_patient = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/19'
-    path_save  = 'TRY2'
-    #path_RS_file = '/mnt/iDriveShare/Kayla/CBCT_images/kayla_extracted/'
-   
-    create_folders_main_folders_per_patient(path_patient,path_save)
-    paths_images_all = get_all_folder_images(path_patient)
-    new_path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path = create_main_paths_per_patient(path_patient,path_save)
-    create_folders_main_folders_per_patient(folder_path,new_path_save_images,folder_path_radiomics,folder_path_dosiomics)
-    
-    save_dicom_attributes_and_volume(paths_images_all[0],new_path_save_images)
-    path_RS_all = get_all_folder_RS(path_patient)
-    #create_ROI_folders(RS_file_path,folder_path_radiomics)
-   
-     
-    #get_set_RS(dir_image_path)
-    
-      #   for ROI in rois:
-     #        create_folder(folder_image+'/radiomics/'+ROI+'_radiomics')
-    #seg = sitk.ReadImage('seg_Parotid_R.nrrd',imageIO='NrrdImageIO')
-             
-    #path_radiomics = '/radiomics/'+path_image+'/'+ROI+'_radiomics' 
-             
  
