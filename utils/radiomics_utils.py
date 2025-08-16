@@ -24,9 +24,6 @@ from scipy.ndimage import shift
 from matplotlib import ticker
 import sys
 sys.path.append('./longiDICOM/code')
-import RD_tools
-from RD_tools import find_dose_file, get_dose_in_gy, get_dose_xyz, get_dose_spacing, resample_dose_map_3D, resize_dose_map_3D, get_struct_dose_values, create_binary_mask, extract_dose_values
-from rs_tools import find_RS_file, find_ROI_names
 from mcode_utils import save_JSON_attributes
 from dicompylercore import dicomparser, dvh, dvhcalc
 
