@@ -37,7 +37,7 @@ The scattered nature of health data, along with the lack of standardization and 
   *  [SimpleITK](https://docs.python.org/3/library/json.html)
   *  [pynrrd](https://pynrrd.readthedocs.io/en/stable/index.html#)
 
-## Installation and Package Import
+## Installation
 
 1. To perfome the **installation** you should clone the latest version from GitHub. Please note that your Python installation should be 3.6 or later. 
 ```
