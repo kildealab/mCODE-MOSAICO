@@ -1,0 +1,20 @@
+{
+    "Imaging Protocol": "None\nNone",
+    "Scanner Vendor": "GE MEDICAL SYSTEMS",
+    "Scanner Type": "Optima CT580",
+    "Scan Duration": "133949.687",
+    "Contrast Enhancement/Bolus": {
+        "Agent": "None",
+        "Ingredient": "None"
+    },
+    "Acquisition Field Of View": {
+        "Reconstruction FOV Diameter": "382",
+        "FOV Shape": "None",
+        "FOV Dimensions": "None",
+        "FOV/Geometry": "None"
+    },
+    "Patient Instructions": {
+        "Patient Orientation": "None",
+        "Instruction Sequence": "HFS"
+    }
+}

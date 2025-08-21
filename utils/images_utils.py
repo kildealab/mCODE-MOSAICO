@@ -1,6 +1,6 @@
 from longiDICOM import *
 import sys
-sys.path.append('longiDICOM/code')
+sys.path.append('../longiDICOM/code')
 import sys
 import matplotlib.pyplot as plt
 import pydicom as dcm

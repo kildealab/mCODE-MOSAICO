@@ -23,7 +23,7 @@ from skimage.draw import polygon
 from scipy.ndimage import shift
 from matplotlib import ticker
 import sys
-sys.path.append('./longiDICOM/code')
+sys.path.append('../longiDICOM/code')
 import RD_tools
 from RD_tools import find_dose_file, get_dose_in_gy, get_dose_xyz, get_dose_spacing, resample_dose_map_3D, resize_dose_map_3D, get_struct_dose_values, create_binary_mask, extract_dose_values
 from rs_tools import find_RS_file, find_ROI_names
@@ -42,6 +42,7 @@ def get_set_images(dir_image_path):
     if format_image=='dcm':
         img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x])
         slices = [dcm.dcmread(j, force=True) for j in img_files]
+       
         try:
             slice_filtered = [i for i in slices if i.Modality in ['CT','CBCT','CBCT_SCAN','MR','PT']]
             return slice_filtered
@@ -65,7 +66,6 @@ def get_set_images(dir_image_path):
 #IT GETS THE MASKS WHEN THEY ARE SAVED IN NII.GZ
 def get_set_masks_nii(dir_mask_path,ROI):
     mask_files = sorted([os.path.join(dir_mask_path, x) for x in os.listdir(dir_mask_path) if '.nii.gz' in x])
-
     return
     
 #GET THE RD DCM FILE
@@ -86,8 +86,7 @@ def get_set_RD(dir_image_path):
         return img_files
     elif format_image=='nrrd':
         img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
-        return img_files
-        
+        return img_files 
         
 def get_set_RS(dir_image_path):
     format_image = os.listdir(dir_image_path)[0].split('.')[-1]
@@ -165,11 +164,11 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
     try:
       nrrd.write(RS_save_path+'/seg_'+ROI_name+'.nrrd', mask_full_v2)
       print("--------------------------------------------------------")
-      print(f"-   Wrote nrrd file for RT structure {ROI_name} file sef_"+ROI_name+" to " + RS_save_path+"   -")
+      print(f"-   Wrote nrrd file for RT structure {ROI_name} file sef_"+ROI_name+" to " + f"{RS_save_path}"+"   -")
       print("--------------------------------------------------------") 
     except:
       print("--------------------------------------------------------")
-      print(f"-   Failed to write nrrd for RT structure {ROI_name} file sef_"+ROI_name+" to " + RS_save_path+"   -")
+      print(f"-   Failed to write nrrd for RT structure {ROI_name} file sef_"+ROI_name+" to " + f"{RS_save_path}"+"   -")
       print("--------------------------------------------------------")   
 
 #THIS SAVES THE IMAGE NII AS NRRD
@@ -263,7 +262,6 @@ def get_PTV_keys(RS_file_path):
     return [x for x in ROI_keys if 'ptv' in x.lower()]
 
 #FUNCTION TO GET THE KEY NAME FOR THE GTV RELATED ELEMENTS
-
 def get_GTV_keys(RS_file_path): 
     ROI_keys = get_ROI_keys(RS_file_path)
     return [x for x in ROI_keys if 'gtv' in x.lower()]
@@ -274,7 +272,6 @@ def get_CTV_keys(RS_file_path):
     ROI_keys = get_ROI_keys(RS_file_path)
     return [x for x in ROI_keys if 'ctv' in x.lower()]
     
-
 def get_mask_nifti(roi_array,start_x,start_y,pixel_spacing):
     '''
     Get the pixel positions (rather than the x,y coords) of the contour array so it can be plotted.
@@ -346,15 +343,14 @@ def get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors = ['D
     rtdose = dicomparser.DicomParser(RD_file_path)
     calc_dvh = dvh.DVH.from_dicom_dvh(rtdose.ds, index_roi)
     result_factors = []
-    
     for factor in factors:
         if factor=='mean':
             result_factors.append(calc_dvh.mean)
         else:
             dose_f = calc_dvh.statistic(factor).value
             result_factors.append(dose_f)      
-  
     return result_factors, factors
+
 
 def search_check_keys(roi_names,ROI_name):
     stri = ''
@@ -365,58 +361,59 @@ def search_check_keys(roi_names,ROI_name):
             continue
     return stri
     
-def all_dosimetric_features_dvh_json(RS_file_path, RD_file_path,path_dosiomics, factors, ROI_names = 'all'):
+def all_dosimetric_features_dvh_json(RS_file_path, RD_file_path,path_dosiomics, factors):
     dp = dicomparser.DicomParser(RS_file_path)
     # i.e. Gets a dict of structure information
     structures = dp.GetStructures()
     elements_structures = [[key] + list(inner.values())[0:2] for key, inner in structures.items()]
     roi_names = np.array(elements_structures)[:,2]
-    
-    if ROI_names=='all':
-        for ROI_name in roi_names:
-            index_roi = list(roi_names).index(ROI_name) + 1
-            try:
-                results_dvh,factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
-                feature_dict = {'ROI Name': ROI_name, 'units' : 'GY'}
-        
-                for i in range(0,len(results_dvh)):
-                    feature_dict[factors[i]] = float(results_dvh[i])
-                    
-                print(feature_dict)
-                print('\n')
+
+    for ROI_names in sys.argv[1:]:
+        if ROI_names.lower() == "all":
+            for ROI_name in roi_names:
+                index_roi = list(roi_names).index(ROI_name) + 1
                 try:
-                    with open(path_dosiomics+'_'+ROI_name+'_dosimetric.json', 'w') as file:
-                        json.dump(feature_dict, file, indent=4)
-                    print('----------'+ ROI_name+' JSON file with DOSIMETRIC factors were saved correctly ------------')
+                    results_dvh,factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
+                    feature_dict = {'ROI Name': ROI_name, 'units' : 'GY'}
+        
+                    for i in range(0,len(results_dvh)):
+                        feature_dict[factors[i]] = float(results_dvh[i])
+                        
+                    print(feature_dict)
                     print('\n')
+                    try:
+                        with open(path_dosiomics+'_'+ROI_name+'_dosimetric.json', 'w') as file:
+                            json.dump(feature_dict, file, indent=4)
+                        print('------------'+ ROI_name+' JSON file with DOSIMETRIC factors were saved correctly ------------')
+                        print('\n')
+                    except:
+                        print('---------------- ERROR ERROR ERROR check files and path -------------------')
                 except:
-                    print('----------- ERROR ERROR ERROR check files and path -------------------')
-            except:
-                print('---------' + ROI_name+ ' does not have DVH information ----------------')
-                continue
+                    print('---------' + ROI_name+ ' does not have DVH information ----------------')
+                    continue
                
-    else:
-        search_key = search_check_keys(roi_names,ROI_names)
-        if search_key=='':
-            print('------- ERROR in ROI name. Check the labels in the RS file and input -------')
-            sys.exit()
+        else:
+            search_key = search_check_keys(roi_names,ROI_names)
+            if search_key=='':
+                print('---------------- ERROR in ROI name. Check the labels in the RS file and input -------')
+                sys.exit()
             
-        index_roi = list(roi_names).index(ROI_names) + 1
-        results_dvh,factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
-        feature_dict = {'ROI Name': ROI_names, 'units' : 'GY'} #check the units from the RD file!
-        for i in range(0,len(results_dvh)):
-            feature_dict[factors[i]] = float(results_dvh[i])
+            index_roi = list(roi_names).index(ROI_names) + 1
+            results_dvh,factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
+            feature_dict = {'ROI Name': ROI_names, 'units' : 'GY'} #check the units from the RD file!
+            for i in range(0,len(results_dvh)):
+                feature_dict[factors[i]] = float(results_dvh[i])
             
-        print(feature_dict)
-        print('\n')
-        try:
-            with open(path_dosiomics+'_'+ROI_names+'_dosimetric.json', 'w') as file:
-                json.dump(feature_dict, file, indent=4)
-            print('----------'+ ROI_names+' JSON file with DOSIMETRIC factors were saved correctly ------------')
+            print(feature_dict)
             print('\n')
-        except:
-            print('----------- ERROR ERROR ERROR check files and path -------------------')
-    return 
+            try:
+                with open(path_dosiomics+'_'+ROI_names+'_dosimetric.json', 'w') as file:
+                    json.dump(feature_dict, file, indent=4)
+                print('----------'+ ROI_names+' JSON file with DOSIMETRIC factors were saved correctly ------------')
+                print('\n')
+            except:
+                print('--------------------- ERROR ERROR ERROR check files and path -------------------')
+        return 
     
 def get_data_from_csv(path):
     return
@@ -429,7 +426,7 @@ def set_default(obj):
 def get_data_from_documents(path,type):
     if type=='csv':
         get_data_from_csv(path)
-        
+
     return
 
 #GET RADIOMICS FUNCTION, WITH METHOD AS INPUT TO GET THE FEATURES SEGMENTATION BASED OR VOXEL BASED
@@ -574,7 +571,6 @@ def get_only_radiomics(imageName,maskName,ROIname,path_radiomics,method):
 def get_only_dosiomics(imageName,maskName,ROIname,path_dosiomics,method):
     get_dosiomics(method,imageName,maskName,ROIname,path_dosiomics)
     return
-    
 
 def create_ROI_folders(RS_file_path,folder_path_radiomics):
     ROI_names = get_ROI_keys(RS_file_path)

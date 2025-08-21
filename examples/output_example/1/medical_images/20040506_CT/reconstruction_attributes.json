@@ -1,0 +1,11 @@
+{
+    "Image Type": "CT",
+    "Slice Thickness (mm)": "1.25",
+    "Slice Spacing (mm)": "None",
+    "Pixel Spacing (mm)": "[0.746094, 0.746094]",
+    "Reconstruction Technique": {
+        "Method": "None",
+        "Algoritihm": "None"
+    },
+    "Convolution Kernel": "STANDARD"
+}

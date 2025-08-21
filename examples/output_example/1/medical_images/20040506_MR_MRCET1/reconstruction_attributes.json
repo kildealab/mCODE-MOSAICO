@@ -1,0 +1,11 @@
+{
+    "Image Type": "MR",
+    "Slice Thickness (mm)": "1",
+    "Slice Spacing (mm)": "None",
+    "Pixel Spacing (mm)": "[1, 1]",
+    "Reconstruction Technique": {
+        "Method": "None",
+        "Algoritihm": "None"
+    },
+    "Convolution Kernel": "None"
+}
