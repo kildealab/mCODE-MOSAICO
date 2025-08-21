@@ -39,10 +39,23 @@ The scattered nature of health data, along with the lack of standardization and 
 
 ## Installation
 
-By pulling the latest version from GitHub. Please note that your Python installation should be 3.6 or later. 
+1. To perfome the **installation** you should clone the latest version from GitHub. Please note that your Python installation should be 3.6 or later. 
 ```
 git clone https://github.com/kildealab/mCODE-MOSAICO
 ```
+2.  To install the **dependecies**
+```
+cd mCODE-MOSAICO
+pip install -r requirements.txt
+```
+
+3. To **import** the package in Jupyter Notebook or Python3 file
+
+```
+import sys
+sys.path.append('/path/to/the/folder/mCODE-MOSAICO/utils')
+```
+
 ## Usage and Examples
 <p align="center">
 <img src="/diagrams/mCODE_Ext_diagram.png" width="1000">
