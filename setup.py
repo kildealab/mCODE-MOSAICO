@@ -15,5 +15,11 @@ setup(
         'scikit-learn',
         'shapely',
         'opencv-python',
-        'pyradiomics'
+        'pyradiomics',
+        'scikit-image',
+        'simpleitk',
+        'pandas',
+        'pynrrd',
+        'matplotlib',
+        'dicompyler-core'
     ]
