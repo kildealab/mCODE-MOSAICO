@@ -15,4 +15,5 @@ setup(
         'scikit-learn',
         'shapely',
         'opencv-python',
+        'pyradiomics'
     ]
