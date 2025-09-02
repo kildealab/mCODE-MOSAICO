@@ -1,5 +1,5 @@
 """
-Created on May 2025 
+Created on August 2025
 @author: Odette Rios-Ibacache 
 
 """
@@ -41,25 +41,28 @@ def main():
     if len(sys.argv[1:]) == 0:
         print("WARNING")
         print("Specify patient directory(ies) or write 'all' to sort all patients.")
+        gc.collect()
         exit()
-    
+        
     for patient in sys.argv[1:]:
         if patient.lower() == "all":
             patients_to_sort = sorted([f for f in os.listdir(path_patients)])
             for path in patients_to_sort:
                 path_save  = '../examples/output_example'
                 path_patient = path_patients+path
-                print(path_patient)
+
                 if not os.path.isdir(path_save):
                     if system == "Linux":
                         os.system("sudo mkdir " + path_save) #add sudo
                     elif system == "Windows":
                         os.makedirs(path_save)
-                new_path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path = mcode_utils.create_main_paths_per_patient(path_patient,path_save)
-    #GET THE PATH OF THE IMAGES 
+                        
+                new_path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path_dosimetric, folder_path = mcode_utils.create_main_paths_per_patient(path_patient,path_save)
+                
+                #GET THE PATH OF THE IMAGES 
                 paths_images_all = get_all_folder_images(path_patient)
 
-    #GET THE SET OF THE IMAGES OF THE PATIENTS
+                #GET THE SET OF THE IMAGES OF THE PATIENTS
                 for path in paths_images_all:
                     set_images = get_set_images(path)
                     if len(set_images)==0:
@@ -67,7 +70,8 @@ def main():
                     else:
                         save_dicom_attributes_and_volume(path,new_path_save_images)
                 end = time.time()
-                print("%%%%%%%%%%%%%%%%%%% Total time per patient %%%%%%%%%%%%%%")
+                
+                print("%%%%%%%%%%%%%%%%%%% Total time per patient %%%%%%%%%%%%%%%%%")
                 print('                      '+str(end-start)+" seconds              ")
                 print('\n')
             
@@ -75,6 +79,7 @@ def main():
             print("%%%%%%%%%%%%%%%%%%% Total time %%%%%%%%%%%%%%%%")
             print('                      '+str(end2-start)+" seconds              ")
             print('\n')
+            gc.collect()
 
         else:
             path_patient = path_patients+patient
@@ -86,7 +91,7 @@ def main():
                 elif system == "Windows":
                     os.makedirs(path_save)
 
-            new_path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path = mcode_utils.create_main_paths_per_patient(path_patient,path_save)
+            new_path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path_dosimetric, folder_path = mcode_utils.create_main_paths_per_patient(path_patient,path_save)
             paths_images_all = get_all_folder_images(path_patient)
 
             for path in paths_images_all:
@@ -97,8 +102,10 @@ def main():
                     save_dicom_attributes_and_volume(path,new_path_save_images)
             
             end = time.time()
+            
             print("%%%%%%%%%%%%%%%%%%% Total time per patient %%%%%%%%%%%%%%")
             print('                      '+str(end-start)+" seconds              ")
+            gc.collect()
 
 
 if __name__ == "__main__":

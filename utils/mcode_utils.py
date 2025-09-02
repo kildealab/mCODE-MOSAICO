@@ -361,6 +361,7 @@ def clone_folders_per_patient(path_patient,path_save):
     create_folder_per_path(path_save3,paths_dict,paths_dict['Folders'])
     create_folder(folder_path+'/radiomics')
     create_folder(folder_path+'/dosiomics')
+    create_folder(folder_path+'/dosimetric')
     return path_save3
 
 def create_main_paths_per_patient(path_patient,path_save):
@@ -377,13 +378,15 @@ def create_main_paths_per_patient(path_patient,path_save):
     path_save_images = folder_path+'/medical_images'
     folder_path_radiomics = folder_path+'/radiomics'
     folder_path_dosiomics = folder_path+'/dosiomics'
+    folder_path_dosimetric = folder_path+'/dosimetrics'
 
     create_patient_folder(folder_path)
     create_folder(path_save_images)
     create_folder(folder_path_radiomics)
     create_folder(folder_path_dosiomics)
+    create_folder(folder_path_dosimetric)
     
-    return path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path
+    return path_save_images, folder_path_radiomics, folder_path_dosiomics, folder_path_dosimetric, folder_path
     
 #def create_folders_main_folders_per_patient(folder_path,new_path_save_images,folder_path_radiomics,folder_path_dosiomics):
     
@@ -391,6 +394,27 @@ def create_main_paths_per_patient(path_patient,path_save):
 def get_all_folder_images(path_patient):
     folder_path_images = sorted(copy_paths(path_patient))
     return folder_path_images
+
+def create_folder_image(set_images,new_path_save_images):
+    image_name = ''
+    if len(set_images)!=0:
+        if isCBCT(set_images)==True:
+            try:
+                image_name = image_name + set_images[0].ContentDate+'_CBCT' #DEFINE THE FOLDER NAME FOR THE MODALITY
+            except:
+                image_name = image_name + set_images[0].SeriesDate+'_CBCT'
+        else: 
+            try:
+                image_name = image_name + set_images[0].ContentDate+'_'+set_images[0].Modality #DEFINE THE FOLDER NAME FOR THE MODALITY
+            except:
+                image_name = image_name + set_images[0].SeriesDate+'_'+set_images[0].Modality
+                
+    if 'MR' in image_name:
+        #sequence = set_images[0].SeriesDescription.replace(" ", "").lower()
+        image_name = image_name+ "_"+set_images[0].SeriesDescription.replace(" ", "")
+             
+    new_folder_name = new_path_save_images+'/'+image_name
+    return new_folder_name
 
 def save_dicom_attributes_and_volume(folder_image,new_path_save_images):
     #CREATING FOLDER FOR THE SPECIFIC PATIENT

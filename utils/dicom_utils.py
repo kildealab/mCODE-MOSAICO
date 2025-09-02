@@ -23,8 +23,11 @@ from skimage.draw import polygon
 import random
 import SimpleITK as sit
 from pydicom.uid import generate_uid
+import os
 
 
+import radiomics_utils
+from radiomics_utils import *
 
 
 '''snippet code from rt-utils. I modified it just a little bit'''
@@ -447,7 +450,7 @@ def save_dcm(data_directory,path_to_save,image_3D,modality):
         # Write to the output directory and add the extension dcm, to force writing
         # in DICOM format.
         new_UID = generate_uid()
-        writer.SetFileName(os.path.join(path_to_save, modality+'.'+new_UID".dcm"))
+        writer.SetFileName(os.path.join(path_to_save, modality+'.'+new_UID+".dcm"))
         writer.Execute(image_slice)
     print('===============================================')
     print("         DCM file saved into ",path_to_save)
@@ -520,4 +523,111 @@ def save_dose_RD_mask(ROI_name, RS_file_path, image_files, dsDose, RS_save_path)
     nrrd.write(RS_save_path+'/seg_'+ROI_name+'_RD.nrrd', seg_roi)
     
     return seg_roi
+
+
+#GET THE RD DCM FILE
+def get_set_RD(dir_image_path):
+    format_image = os.listdir(dir_image_path)[0].split('.')[-1]
+    if format_image=='dcm':
+        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.dcm' in x])
+        slices = [dcm.dcmread(j, force=True) for j in img_files]
+        try:
+            slice_filtered = [i for i in slices if i.Modality=='RTDOSE']
+            return slice_filtered
+        except:
+            RT = '1.2.840.10008.5.1.4.1.1.481.2'
+            slice_filtered = [i for i in slices if i[0x0008, 0x0016].value==RT]
+            return slice_filtered   
+    elif format_image=='nii':
+        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nii' in x])
+        return img_files
+    elif format_image=='nrrd':
+        img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
+        return img_files
+        
+def search_RD_path(dir_RD_path,RT_ref=None,dicoPATH=False):    
+    if dicoPATH==False:
+        if RT_ref!=None:
+            RD_files = sorted([os.path.join(dir_RD_path, x) for x in os.listdir(dir_RD_path) if '.dcm' in x])
+            slices = [dcm.dcmread(j, force=True) for j in RD_files]
+            if len(slices)!=0:
+                try:
+                    if slices[0].Modality=='RTDOSE' and slices[0].FrameOfReferenceUID==RT_ref:
+                        return True
+                except:
+                    if slices[0][0x0008, 0x0016].value=='1.2.840.10008.5.1.4.1.1.481.2' and slices[0].FrameOfReferenceUID==RT_ref:
+                        return True
+
+
+def get_dirs_RD(paths_RT,paths_images_all,dicoPATH=False):
+    paths = {}
+    for key in paths_RT.items():
+        RT_path = paths_RT[key[0]]
+        if dicoPATH==False:
+            RT_files = sorted([os.path.join(RT_path, x) for x in os.listdir(RT_path) if '.dcm' in x])
+            slices = [dcm.dcmread(j, force=True) for j in RT_files]
+            for path_2 in paths_images_all:
+                RD_file = search_RD_path(path_2,slices[0].ReferencedFrameOfReferenceSequence[0].FrameOfReferenceUID)
+                if RD_file==True:      
+                    RD_files = sorted([os.path.join(path_2, x) for x in os.listdir(path_2) if '.dcm' in x])
+                    paths[RT_path] = RD_files[0]
+                else:
+                    continue
+        else:
+            path_RD = get_path_RD_dicoPATH(RT_path)
+            paths[RT_path] = path_RD
+    return paths
+    
+def search_RS_path(dir_RS_path,image_UID=None):    
+    if image_UID!=None:
+        RS_files = sorted([os.path.join(dir_RS_path, x) for x in os.listdir(dir_RS_path) if '.dcm' in x])
+        slices = [dcm.dcmread(j, force=True) for j in RS_files]
+        if len(slices)!=0:
+            if slices[0].Modality=='RTSTRUCT' and slices[0].StructureSetLabel==image_UID:
+                return True
+            elif slices[0][0x0008, 0x0016].value=='1.2.840.10008.5.1.4.1.1.481.3' and slices[0].StructureSetLabel==image_UID:
+                return True
+                #else:
+                    #print('############  Check RT format ############')
+       
+                #uid_rt = slices[0].ReferencedFrameOfReferenceSequence[0].RTReferencedStudySequence[0].RTReferencedSeriesSequence[0]
+                #if slices[0].Modality=='RTSTRUCT' and uid_rt==image_UID:
+                ##
+        
+def get_dirs_RT(paths_images_all,dicoPATH=False):
+    paths = {}
+    for path in paths_images_all:
+        set_images = get_set_images(path)
+        if len(set_images)!=0:
+            if dicoPATH==False:
+                for path_2 in paths_images_all:
+                    RS_file = search_RS_path(path_2,set_images[0].SeriesDescription)
+                    if RS_file==True:
+                        RS_files = sorted([os.path.join(path_2, x) for x in os.listdir(path_2) if '.dcm' in x])
+                        paths[path] = RS_files[0]
+                    else:
+                        continue
+            else:
+                if path.split('/')[-1][9:11] == 'CT' and len(path.split('/')[-1])==23:
+                    path_RS = get_path_RS_dicoPATH(path)
+                    paths[path] = path_RS
+                else:
+                    continue
+    return paths
+    
+def search_RS_file(path,image_UID=None):
+    RS_files = get_set_RS_path(path,image_UID)
+    return RS_files
+
+def get_path_RS_dicoPATH(path_CT):   
+    '''Gets the RS path (Rt structure file) for the CT folder'''  
+    file_RS = [x for x in os.listdir(path_CT) if 'RS' in x][0]
+    return os.path.join(path_CT, file_RS)
+
+def get_path_RD_dicoPATH(path_RS): 
+    path_RS2 = '/'.join(path_RS.split('/')[:-1])
+    file_RD = [x for x in os.listdir(path_RS2) if 'RD' in x]
+    files = [[dcm.dcmread(path_RS2+'/'+x).InstanceCreationTime,x] for x in file_RD]
+    sorted_data = sorted(files)# finds the RD file with the name RD.######.dcm
+    return os.path.join(path_RS2, sorted_data[-1][-1])
 

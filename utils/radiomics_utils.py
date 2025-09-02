@@ -7,6 +7,8 @@ import json
 import radiomics 
 import shutil
 import os
+import gc
+
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.draw import polygon
@@ -23,16 +25,15 @@ from skimage.draw import polygon
 from scipy.ndimage import shift
 from matplotlib import ticker
 import sys
-<<<<<<< HEAD
 sys.path.append('../longiDICOM/code')
 import RD_tools
 from RD_tools import find_dose_file, get_dose_in_gy, get_dose_xyz, get_dose_spacing, resample_dose_map_3D, resize_dose_map_3D, get_struct_dose_values, create_binary_mask, extract_dose_values
 from rs_tools import find_RS_file, find_ROI_names
-=======
-sys.path.append('./longiDICOM/code')
->>>>>>> origin/master
 from mcode_utils import save_JSON_attributes
 from dicompylercore import dicomparser, dvh, dvhcalc
+
+import mcode_utils
+from mcode_utils import *
 
 
 ############################################################################
@@ -116,8 +117,8 @@ def get_set_RS(dir_image_path):
 #FUNCTION TO GET THE CONTOUR FROM THE ROI_NAME 
 #RECEIVES THE RS DICOM FILE (RT STRUCTURE) PATH
 #IMAGE FILES (SET OF NP ARRAYS OF THE IMAGES)
-def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_path):
-    RS = dcm.read_file(RS_file_path)
+def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file,image_files, RS_save_path):
+    RS = RS_file
     slices = image_files.copy()
     contour_coords = []
 
@@ -138,13 +139,12 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
 
         for i, ct_file in enumerate(image_files):
             if ct_file.SOPInstanceUID == slice_uid:
-            
                 slice_to_contour_seq[i] = contour_seq
                 slices_id.append(i)    
    
-    ds0 =slices[0]
+    ds0 = slices[0]
     pixel_spacing = (float(ds0.PixelSpacing[0]),float(ds0.PixelSpacing[1]),float(ds0.SliceThickness)) #DESIRE PIXEL SPACING AND VOLUME
-    pixels_dimensions = (int(ds0.Rows),int(ds0.Columns),len(dicom_files))  #DESIRE IMAGE SIZE
+    pixels_dimensions = (int(ds0.Rows),int(ds0.Columns),len(image_files))  #DESIRE IMAGE SIZE
     mask_full = np.zeros(pixels_dimensions,dtype=ds0.pixel_array.dtype) #SET A BLANK MASK WITH THE SIZE OF THE IMAGE OF REFERENCE
     #USUALLY THE IMAGES ARE REGISTERED HAVING THE SAME SIZE #IF NOT, THE POSITION OF THE CONTOURS SHOULD BE ALIGNED
 
@@ -153,7 +153,6 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
             slice_new = np.array(slice_to_contour_seq[slicei].ContourData).reshape((-1,3))
             start_x2, start_y2, start_z2, pixel_spacing2 = get_start_position_dcm(image_files)
             coords_px = get_mask_nifti(slice_new,start_x2,start_y2,pixel_spacing2)
-            
         else:
             coords_px = None
             
@@ -162,18 +161,23 @@ def save_RT_tructure_dcm_as_nrrd(ROI_name, RS_file_path,image_files, RS_save_pat
             rows,cols = polygon(coords_px[1],coords_px[0])
             mask[rows,cols] = 1            
     
-        mask_full[:,:,slicei] = mask        
+        mask_full[:,:,slicei] = mask  
+        
     
     mask_full_v2= np.swapaxes(mask_full, 0, 1)
+    #print(mask_full_v2.shape)
+    #print(pixels_dimensions)
     try:
       nrrd.write(RS_save_path+'/seg_'+ROI_name+'.nrrd', mask_full_v2)
       print("--------------------------------------------------------")
-      print(f"-   Wrote nrrd file for RT structure {ROI_name} file sef_"+ROI_name+" to " + f"{RS_save_path}"+"   -")
+      print(f"-   Wrote nrrd file for RT structure {ROI_name} file seg_"+ROI_name+" to " + f"{RS_save_path}"+"   -")
       print("--------------------------------------------------------") 
     except:
       print("--------------------------------------------------------")
-      print(f"-   Failed to write nrrd for RT structure {ROI_name} file sef_"+ROI_name+" to " + f"{RS_save_path}"+"   -")
+      print(f"-   Failed to write nrrd for RT structure {ROI_name} file seg_"+ROI_name+" to " + f"{RS_save_path}"+"   -")
       print("--------------------------------------------------------")   
+
+    return RS_save_path+'/seg_'+ROI_name+'.nrrd'
 
 #THIS SAVES THE IMAGE NII AS NRRD
 def save_img_nii_as_nrrd(set_image,save_path,image_name):
@@ -195,6 +199,67 @@ def save_img_nii_as_nrrd(set_image,save_path,image_name):
         print("--------------------------------------------------------")
         print(f"-   Failed to write nrrd file {image_name} to {save_path}   -")
         print("--------------------------------------------------------")
+
+    
+
+def create_ROI_folders_and_radiomics(RS_file,folder_path_radiomics,set_images,new_path_save_images):
+    ROI_names = get_ROI_keys_2(RS_file)
+
+    for ROI in ROI_names:
+        new_folder = folder_path_radiomics+'/'+ROI+'_radiomics'
+        print(new_folder)
+        create_folder(new_folder)
+        
+        RS_save_path = create_folder_image(set_images,new_folder)
+        create_folder(RS_save_path)
+        save_RT_tructure_dcm_as_nrrd(ROI, RS_file,set_images, RS_save_path)
+        
+        file_name = RS_save_path.split('/')[-1]
+        image_file = new_path_save_images+'/'+file_name+'/'+file_name+'.nrrd'
+        print(image_file)
+        #try: 
+        get_radiomics('segmentation',image_file,mask_file,ROI,RS_save_path)
+        #except:
+            #print('--------------------------------------------------')
+            #print('-     No possible to get the segmentation based features: check the mask    -')
+            #print('--------------------------------------------------')
+        
+        create_folder(RS_save_path+'/voxel_based')
+        #try:
+        get_radiomics('voxel',image_file,mask_file,ROI,RS_save_path)
+        #except:
+         #   print('--------------------------------------------------')
+          #  print('-     No possible to get the voxel based features: check the mask   -')
+           # print('--------------------------------------------------')
+   
+def create_ROI_folders_and_radiomics_specific(RS_file,ROI,folder_path_radiomics,set_images,new_path_save_images): 
+    new_folder = folder_path_radiomics+'/'+ROI+'_radiomics'
+    create_folder(new_folder)
+    
+    RS_save_path = create_folder_image(set_images,new_folder)
+    create_folder(RS_save_path)
+    mask_path = save_RT_tructure_dcm_as_nrrd(ROI, RS_file, set_images, RS_save_path)
+    
+    file_name = RS_save_path.split('/')[-1]
+    image_path= new_path_save_images+'/'+file_name+'/'+file_name+'.nrrd'
+    
+    #try:
+    get_radiomics('segmentation',image_path,mask_path,ROI,RS_save_path)
+    #except:
+     #   print('--------------------------------------------------')
+      #  print('-     No possible to get the segmentation based features: check the mask    -')
+       # print('--------------------------------------------------')
+    create_folder(RS_save_path+'/voxel_based')
+    
+    #try:
+    get_radiomics('voxel',image_path,mask_path,ROI,RS_save_path)
+    #except:
+     #   print('--------------------------------------------------')
+      #  print('-     No possible to get the voxel based features: check the mask    -')
+       # print('--------------------------------------------------')
+
+
+
 
 
 #GET IMAGE FROM DCM TO NRRD
@@ -257,6 +322,11 @@ def save_RT_dose_as_nrrd(rt_dose,set_images,dcm_save_path):
 #FUNCTION TO GET THE KEYS FOR EACH NAME ROI
 def get_ROI_keys(RS_file_path):  #ROI Name different from the PTV
     RS_file = dcm.read_file(RS_file_path)
+    contour_keys = RS_file.StructureSetROISequence
+    return [str(x.ROIName) for x in contour_keys]
+
+#FUNCTION TO GET THE KEYS FOR EACH NAME ROI
+def get_ROI_keys_2(RS_file):  #ROI Name different from the PTV
     contour_keys = RS_file.StructureSetROISequence
     return [str(x.ROIName) for x in contour_keys]
 
@@ -408,8 +478,8 @@ def all_dosimetric_features_dvh_json(RS_file_path, RD_file_path,path_dosiomics, 
             for i in range(0,len(results_dvh)):
                 feature_dict[factors[i]] = float(results_dvh[i])
             
-            print(feature_dict)
-            print('\n')
+            #print(feature_dict)
+            #print('\n')
             try:
                 with open(path_dosiomics+'_'+ROI_names+'_dosimetric.json', 'w') as file:
                     json.dump(feature_dict, file, indent=4)
@@ -418,6 +488,59 @@ def all_dosimetric_features_dvh_json(RS_file_path, RD_file_path,path_dosiomics, 
             except:
                 print('--------------------- ERROR ERROR ERROR check files and path -------------------')
         return 
+
+
+def all_dosimetric_features_dvh_json_input(RS_file_path, RD_file_path,path_dosiomics, factors, ROI_names):
+    dp = dicomparser.DicomParser(RS_file_path)
+    # i.e. Gets a dict of structure information
+    structures = dp.GetStructures()
+    elements_structures = [[key] + list(inner.values())[0:2] for key, inner in structures.items()]
+    roi_names = np.array(elements_structures)[:,2]
+    
+    if ROI_names.lower() == "all":
+        for ROI_name in roi_names:
+            index_roi = list(roi_names).index(ROI_name) + 1
+            try:
+                results_dvh,factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
+                feature_dict = {'ROI Name': ROI_name, 'units' : 'GY'}
+        
+                for i in range(0,len(results_dvh)):
+                    feature_dict[factors[i]] = float(results_dvh[i])
+                        
+                print(feature_dict)
+                print('\n')
+                try:
+                    with open(path_dosiomics+'_'+ROI_name+'_dosimetric.json', 'w') as file:
+                        json.dump(feature_dict, file, indent=4)
+                    print('------------'+ ROI_name+' JSON file with DOSIMETRIC factors were saved correctly ------------')
+                    print('\n')
+                except:
+                    print('---------------- ERROR ERROR ERROR check files and path -------------------')
+            except:
+                print('---------' + ROI_name+ ' does not have DVH information ----------------')
+                continue
+               
+    else:
+        search_key = search_check_keys(roi_names,ROI_names)
+        if search_key=='':
+            print('---------------- ERROR in ROI name. Check the labels in the RS file and input -------')
+            sys.exit()            
+        index_roi = list(roi_names).index(ROI_names) + 1
+        results_dvh,factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
+        feature_dict = {'ROI Name': ROI_names, 'units' : 'GY'} #check the units from the RD file!
+        for i in range(0,len(results_dvh)):
+            feature_dict[factors[i]] = float(results_dvh[i])
+            
+            print(feature_dict)
+            print('\n')
+        try:
+            with open(path_dosiomics+'_'+ROI_names+'_dosimetric.json', 'w') as file:
+                json.dump(feature_dict, file, indent=4)
+            print('----------'+ ROI_names+' JSON file with DOSIMETRIC factors were saved correctly ------------')
+            print('\n')
+        except:
+            print('--------------------- ERROR ERROR ERROR check files and path -------------------')
+    return 
     
 def get_data_from_csv(path):
     return
@@ -435,7 +558,11 @@ def get_data_from_documents(path,type):
 
 #GET RADIOMICS FUNCTION, WITH METHOD AS INPUT TO GET THE FEATURES SEGMENTATION BASED OR VOXEL BASED
 #FOR VOXEL BASED IT RETURNS THE FEATURE MAP.
-def get_radiomics(method,imageName,maskName,ROIName,path_radiomics):
+def get_radiomics(method,image_file,mask_file,ROIName,path_radiomics):
+    
+    maskName = sitk.ReadImage(mask_file,imageIO='NrrdImageIO')
+    imageName = sitk.ReadImage(image_file,imageIO='NrrdImageIO')
+
     
     software_version = radiomics.__version__
     parameters = os.path.abspath(os.path.join('Params.yaml'))
@@ -463,11 +590,10 @@ def get_radiomics(method,imageName,maskName,ROIName,path_radiomics):
         for i,featureName in enumerate(featureVector.keys()):
             if featureName.split('_')[1] in keys_features:
                 feature_dict[featureName] = float(featureVector[featureName])
-        with open(path_radiomics+'seg_'+ROIName+"_radiomics.json", "w") as outfile: 
+        with open(path_radiomics+'/seg_'+ROIName+"_radiomics.json", "w") as outfile: 
         #FEATURE JSON FILE SAVE IN THE RADIOMICS FOLDER PER PATIENT AND IMAGE STUDIED
                 json.dump(feature_dict, outfile,indent=4)
     return  
-
 
 #FUNCTION TO RESAMPLE AND RESIZING THE DOSE MAP DISTRIBUTION
 #IT RECEIVED THE DOSE MAP (dsDose), number of the slices in the image
