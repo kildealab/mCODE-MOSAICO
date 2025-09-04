@@ -364,6 +364,55 @@ def clone_folders_per_patient(path_patient,path_save):
     create_folder(folder_path+'/dosimetric')
     return path_save3
 
+def check_main_dosimetric_per_patient(path_patient,path_save):
+    directory_path = path_patient
+    folders = sorted(get_folders_in_directory(directory_path))
+      
+    paths_dict = {'Patient':directory_path.split('/')[-1]}
+    paths_dict['Folders'] = folders
+    folder_path = path_save+"/"+paths_dict['Patient']
+    folder_path_dosimetric = folder_path+'/dosimetrics'
+    
+    if os.path.isdir(folder_path_dosimetric):  
+        print(f"The folder '{folder_path_dosimetric}' exists.")
+    else:
+        create_folder(folder_path_dosimetric)
+
+    return folder_path_dosimetric
+
+def check_main_dosiomics_per_patient(path_patient,path_save):
+    directory_path = path_patient
+    folders = sorted(get_folders_in_directory(directory_path))
+      
+    paths_dict = {'Patient':directory_path.split('/')[-1]}
+    paths_dict['Folders'] = folders
+    folder_path = path_save+"/"+paths_dict['Patient']
+    folder_path_dosiomics = folder_path+'/dosiomics'
+    
+    if os.path.isdir(folder_path_dosiomics):  
+        print(f"The folder '{folder_path_dosiomics}' exists.")
+    else:
+        create_folder(folder_path_dosiomics)
+
+    return folder_path_dosiomics
+
+def check_main_radiomics_per_patient(path_patient,path_save):
+    directory_path = path_patient
+    folders = sorted(get_folders_in_directory(directory_path))
+      
+    paths_dict = {'Patient':directory_path.split('/')[-1]}
+    paths_dict['Folders'] = folders
+    folder_path = path_save+"/"+paths_dict['Patient']
+    folder_path_radiomics = folder_path+'/radiomics'
+    
+    if os.path.isdir(folder_path_radiomics):  
+        print(f"The folder '{folder_path_radiomics}' exists.")
+    else:
+        create_folder(folder_path_radiomics)
+
+    return folder_path_radiomics
+        
+
 def create_main_paths_per_patient(path_patient,path_save):
     directory_path = path_patient
     folders = sorted(get_folders_in_directory(directory_path))

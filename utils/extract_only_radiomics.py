@@ -12,6 +12,9 @@ import radiomics_utils
 from radiomics_utils import *
 
 path_patients = '../examples/GBM_burdenko_example/'
+path_save   = '../examples/output_example'
+PATH_TO_SAVE = '../examples/output_example'
+
 
 def main():
     start = time.time()
@@ -29,7 +32,6 @@ def main():
         if patient.lower() == "all":
             patients_to_sort = sorted([f for f in os.listdir(path_patients)])
             for path in patients_to_sort:
-                path_save  = '../examples/output_example'
                 path_patient = path_patients+path
                 paths_images_all = get_all_folder_images(path_patient)
                 
@@ -46,14 +48,11 @@ def main():
         else:
             path_patient = path_patients+patient
             paths_images_all = get_all_folder_images(path_patient)
-            
             RS_file_path = 
-                            
+
+
             
-                
-
-    
-
+      
 
 if __name__ == "__main__":
     main()

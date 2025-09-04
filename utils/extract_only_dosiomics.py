@@ -14,6 +14,7 @@ from radiomics_utils import *
 factors = ['D0', 'D100', 'D50','mean','V0.5cc']
 
 path_patients = '../examples/GBM_burdenko_example/'
+path_save  = '../examples/output_example'
 
 def main():
     start = time.time()
@@ -29,27 +30,38 @@ def main():
         
         if patient.lower() == "all":
             patients_to_sort = sorted([f for f in os.listdir(path_patients)])
-            for path in patients_to_sort:
-                path_save  = '../examples/output_example'
+            for path in patients_to_sort:                
                 path_patient = path_patients+path
-                
+                PATH_TO_SAVE = check_main_dosiomics_per_patient(path_patient,path_save)+'/'
                 
                 RS_file_path = search_RS_file(paths_images_all[0],set_images,set_images[0].StudyInstanceUID)
                 create_ROI_folders_and_radiomics_specific(RS_file[-1],ROI_name,folder_path_radiomics,set_images,new_path_save_images)
                 
-                RD_file_path = 
+                RD_file_path = search_RD_file(paths_images_all[0],set_images,set_images[0].StudyInstanceUID)
                 all_dosimetric_features_dvh_json(RS_file_path,RD_file_path,PATH_TO_SAVE,factors,str(ROI_name))
+
+                end = time.time()
                 
+                print("%%%%%%%%%%%%%%%%%%% Total time per patient %%%%%%%%%%%%%%%%%")
+                print('                      '+str(end-start)+" seconds              ")
+                print('\n')
                     
         else:
             path_patient = path_patients+patient
-            RS_file_path = 
-            RD_file_path = 
+            PATH_TO_SAVE = check_main_dosiomics_per_patient(path_patient,path_save)+'/'
+
+            RS_file_path = search_RS_file(paths_images_all[0],set_images,set_images[0].StudyInstanceUID)
+            create_ROI_folders_and_radiomics_specific(RS_file[-1],ROI_name,folder_path_radiomics,set_images,new_path_save_images)
+                
+            RD_file_path = search_RD_file(paths_images_all[0],set_images,set_images[0].StudyInstanceUID)
+            
             all_dosimetric_features_dvh_json(RS_file_path,RD_file_path,PATH_TO_SAVE,factors,str(ROI_name))
             
                 
-
-    
+            end = time.time()
+            print("%%%%%%%%%%%%%%%%%%% Total time per patient %%%%%%%%%%%%%%")
+            print('                      '+str(end-start)+" seconds              ")
+            print('\n')
 
 
 if __name__ == "__main__":

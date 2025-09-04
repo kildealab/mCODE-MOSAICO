@@ -562,15 +562,18 @@ def search_RD_path(dir_RD_path,RT_ref=None,dicoPATH=False):
 def get_dirs_RD(paths_RT,paths_images_all,dicoPATH=False):
     paths = {}
     for key in paths_RT.items():
-        RT_path = paths_RT[key[0]]
+        RT_path = ("/").join(paths_RT[key[0]].split('/')[:-1])
         if dicoPATH==False:
             RT_files = sorted([os.path.join(RT_path, x) for x in os.listdir(RT_path) if '.dcm' in x])
+            #TO DO: TO CHECK THE DATES OF THE RT FILES TO SORT THEM IN CASE THERE ARE TWO. IT HAS TO TAKE THE MOST RECENT ONE
             slices = [dcm.dcmread(j, force=True) for j in RT_files]
             for path_2 in paths_images_all:
                 RD_file = search_RD_path(path_2,slices[0].ReferencedFrameOfReferenceSequence[0].FrameOfReferenceUID)
                 if RD_file==True:      
                     RD_files = sorted([os.path.join(path_2, x) for x in os.listdir(path_2) if '.dcm' in x])
+                
                     paths[RT_path] = RD_files[0]
+                
                 else:
                     continue
         else:

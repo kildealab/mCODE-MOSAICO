@@ -1,0 +1,9 @@
+{
+    "Image Type": "['ORIGINAL', 'PRIMARY', 'AXIAL']",
+    "Scan Mode": "HELICAL MODE",
+    "KVP": "120",
+    "XRayTubeCurrent": "491",
+    "Exposure (msec)": "897",
+    "Spiral Pitch": "None",
+    "Image Filter": "None"
+}

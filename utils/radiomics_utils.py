@@ -490,7 +490,7 @@ def all_dosimetric_features_dvh_json(RS_file_path, RD_file_path,path_dosiomics, 
         return 
 
 
-def all_dosimetric_features_dvh_json_input(RS_file_path, RD_file_path,path_dosiomics, factors, ROI_names):
+def all_dosimetric_features_dvh_json_input(RS_file_path, RD_file_path, path_dosiomics, factors, ROI_names):
     dp = dicomparser.DicomParser(RS_file_path)
     # i.e. Gets a dict of structure information
     structures = dp.GetStructures()
@@ -501,16 +501,15 @@ def all_dosimetric_features_dvh_json_input(RS_file_path, RD_file_path,path_dosio
         for ROI_name in roi_names:
             index_roi = list(roi_names).index(ROI_name) + 1
             try:
-                results_dvh,factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
+                results_dvh, factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
                 feature_dict = {'ROI Name': ROI_name, 'units' : 'GY'}
-        
                 for i in range(0,len(results_dvh)):
                     feature_dict[factors[i]] = float(results_dvh[i])
                         
                 print(feature_dict)
                 print('\n')
                 try:
-                    with open(path_dosiomics+'_'+ROI_name+'_dosimetric.json', 'w') as file:
+                    with open(path_dosiomics+ROI_name+'_dosimetric.json', 'w') as file:
                         json.dump(feature_dict, file, indent=4)
                     print('------------'+ ROI_name+' JSON file with DOSIMETRIC factors were saved correctly ------------')
                     print('\n')
@@ -534,7 +533,7 @@ def all_dosimetric_features_dvh_json_input(RS_file_path, RD_file_path,path_dosio
             print(feature_dict)
             print('\n')
         try:
-            with open(path_dosiomics+'_'+ROI_names+'_dosimetric.json', 'w') as file:
+            with open(path_dosiomics+ROI_names+'_dosimetric.json', 'w') as file:
                 json.dump(feature_dict, file, indent=4)
             print('----------'+ ROI_names+' JSON file with DOSIMETRIC factors were saved correctly ------------')
             print('\n')

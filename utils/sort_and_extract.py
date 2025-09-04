@@ -44,8 +44,11 @@ def main():
         print("Specify patient directory(ies) or write 'all' to sort all patients.")
         gc.collect()
         exit()
+
+    elif len(sys.argv)>=3:
+        patient = sys.argv[1]
+        ROI_name = sys.argv[2]
     
-    for patient in sys.argv[1:]:
         if patient.lower() == "all":
             patients_to_sort = sorted([f for f in os.listdir(path_patients)])
             for path in patients_to_sort:
