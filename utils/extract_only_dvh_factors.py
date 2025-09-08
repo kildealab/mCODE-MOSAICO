@@ -13,6 +13,8 @@ from radiomics_utils import *
 
 import dicom_utils
 from dicom_utils import *
+import mcode_utils
+from import mcode_utils import *
 
 factors = ['D0', 'D100', 'D50','mean','V0.5cc']
 
@@ -75,7 +77,7 @@ def main():
                         RD_file_path = paths_RD[RS_file_path_2]
                         all_dosimetric_features_dvh_json_input(RS_file_path,RD_file_path,PATH_TO_SAVE,factors,str(ROI_name))
             
-
+#TO DO: IF A PATIENT DOES NOT 
 if __name__ == "__main__":
     main()
     
