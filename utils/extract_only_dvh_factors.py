@@ -14,7 +14,7 @@ from radiomics_utils import *
 import dicom_utils
 from dicom_utils import *
 import mcode_utils
-from import mcode_utils import *
+from mcode_utils import *
 
 factors = ['D0', 'D100', 'D50','mean','V0.5cc']
 

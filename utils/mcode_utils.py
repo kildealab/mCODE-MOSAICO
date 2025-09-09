@@ -371,6 +371,12 @@ def check_main_dosimetric_per_patient(path_patient,path_save):
     paths_dict = {'Patient':directory_path.split('/')[-1]}
     paths_dict['Folders'] = folders
     folder_path = path_save+"/"+paths_dict['Patient']
+
+    if os.path.isdir(folder_path):  
+        print(f"The folder '{folder_path}' exists.")
+    else:
+        create_folder(folder_path)
+        
     folder_path_dosimetric = folder_path+'/dosimetrics'
     
     if os.path.isdir(folder_path_dosimetric):  
