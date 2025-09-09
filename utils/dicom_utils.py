@@ -628,8 +628,8 @@ def get_path_RS_dicoPATH(path_CT):
 def get_path_RD_dicoPATH(path_RS): 
     file_RD = [x for x in os.listdir(path_RS) if 'RD' in x]
     files = [[dcm.dcmread(path_RS+'/'+x).InstanceCreationTime,x] for x in file_RD]
-    #sorted_data = sorted(files)# finds the RD file with the name RD.######.dcm
+    sorted_data = sorted(files)# finds the RD file with the name RD.######.dcm
     #print(sorted_data)
-    return os.path.join(path_RS, files_RD[0][0])
+    return os.path.join(path_RS, sorted_data[-1][-1])
 
 
