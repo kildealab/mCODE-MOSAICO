@@ -414,6 +414,7 @@ def get_dosimetric_from_RD_data(ROI_name,RT_file,RS_file):
     return min_dose, mean_dose, max_dose
 
 def get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors = ['D0', 'D100', 'D50','mean']):
+    
     rtdose = dicomparser.DicomParser(RD_file_path)
     calc_dvh = dvh.DVH.from_dicom_dvh(rtdose.ds, index_roi)
     result_factors = []
@@ -500,24 +501,25 @@ def all_dosimetric_features_dvh_json_input(RS_file_path, RD_file_path, path_dosi
     if ROI_names.lower() == "all":
         for ROI_name in roi_names:
             index_roi = list(roi_names).index(ROI_name) + 1
-            try:
-                results_dvh, factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
-                feature_dict = {'ROI Name': ROI_name, 'units' : 'GY'}
-                for i in range(0,len(results_dvh)):
-                    feature_dict[factors[i]] = float(results_dvh[i])
+            #try:
+            
+            results_dvh, factors =  get_dosimetric_factors_dvh(index_roi,RS_file_path,RD_file_path,factors)
+            feature_dict = {'ROI Name': ROI_name, 'units' : 'GY'}
+            for i in range(0,len(results_dvh)):
+                feature_dict[factors[i]] = float(results_dvh[i])
                         
-                print(feature_dict)
+            print(feature_dict)
+            print('\n')
+            try:
+                with open(path_dosiomics+ROI_name+'_dosimetric.json', 'w') as file:
+                    json.dump(feature_dict, file, indent=4)
+                print('------------'+ ROI_name+' JSON file with DOSIMETRIC factors were saved correctly ------------')
                 print('\n')
-                try:
-                    with open(path_dosiomics+ROI_name+'_dosimetric.json', 'w') as file:
-                        json.dump(feature_dict, file, indent=4)
-                    print('------------'+ ROI_name+' JSON file with DOSIMETRIC factors were saved correctly ------------')
-                    print('\n')
-                except:
-                    print('---------------- ERROR ERROR ERROR check files and path -------------------')
             except:
-                print('---------' + ROI_name+ ' does not have DVH information ----------------')
-                continue
+                print('---------------- ERROR ERROR ERROR check files and path -------------------')
+            #except:
+                #print('--------- CHECK FILES OR' + ROI_name+ ' does not have DVH information ----------------')
+                #continue
                
     else:
         search_key = search_check_keys(roi_names,ROI_names)
