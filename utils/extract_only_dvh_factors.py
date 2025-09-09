@@ -65,8 +65,8 @@ def main():
             print("             Processing patient: "+patient+"           ")
             
             paths_images_all = get_all_folder_images(path_patient)
-            paths_RT = get_dirs_RT(paths_images_all,False)
-            paths_RD = get_dirs_RD(paths_RT,paths_images_all,False)
+            paths_RT = get_dirs_RT(paths_images_all,dicoPATH)
+            paths_RD = get_dirs_RD(paths_RT,paths_images_all,dicoPATH)
             
             gc.collect()
             for key in paths_RT.items():
