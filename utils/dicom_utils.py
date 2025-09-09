@@ -545,7 +545,7 @@ def get_set_RD(dir_image_path):
         img_files = sorted([os.path.join(dir_image_path, x) for x in os.listdir(dir_image_path) if '.nrrd' in x])
         return img_files
         
-def search_RD_path(dir_RD_path,RT_ref=None,dicoPATH=False):    
+def search_RD_path(dir_RD_path,RT_ref=None, dicoPATH=False):    
     if dicoPATH==False:
         if RT_ref!=None:
             RD_files = sorted([os.path.join(dir_RD_path, x) for x in os.listdir(dir_RD_path) if '.dcm' in x])
@@ -568,12 +568,10 @@ def get_dirs_RD(paths_RT,paths_images_all,dicoPATH=False):
             #TO DO: TO CHECK THE DATES OF THE RT FILES TO SORT THEM IN CASE THERE ARE TWO. IT HAS TO TAKE THE MOST RECENT ONE
             slices = [dcm.dcmread(j, force=True) for j in RT_files]
             for path_2 in paths_images_all:
-                RD_file = search_RD_path(path_2,slices[0].ReferencedFrameOfReferenceSequence[0].FrameOfReferenceUID)
+                RD_file = search_RD_path(path_2,slices[0].ReferencedFrameOfReferenceSequence[0].FrameOfReferenceUID,dicoPATH)
                 if RD_file==True:      
                     RD_files = sorted([os.path.join(path_2, x) for x in os.listdir(path_2) if '.dcm' in x])
-                
                     paths[RT_path] = RD_files[0]
-                
                 else:
                     continue
         else:
@@ -628,9 +626,10 @@ def get_path_RS_dicoPATH(path_CT):
     return os.path.join(path_CT, file_RS)
 
 def get_path_RD_dicoPATH(path_RS): 
-    path_RS2 = '/'.join(path_RS.split('/')[:-1])
-    file_RD = [x for x in os.listdir(path_RS2) if 'RD' in x]
-    files = [[dcm.dcmread(path_RS2+'/'+x).InstanceCreationTime,x] for x in file_RD]
+    file_RD = [x for x in os.listdir(path_RS) if 'RD' in x]
+    files = [[dcm.dcmread(path_RS+'/'+x).InstanceCreationTime,x] for x in file_RD]
     sorted_data = sorted(files)# finds the RD file with the name RD.######.dcm
-    return os.path.join(path_RS2, sorted_data[-1][-1])
+    #print(sorted_data)
+    return os.path.join(path_RS, sorted_data[-1][-1])
+
 

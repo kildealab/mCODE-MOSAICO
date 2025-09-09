@@ -20,6 +20,7 @@ factors = ['D0', 'D100', 'D50','mean','V0.5cc']
 
 path_patients = '../examples/GBM_burdenko_example/'
 path_save   = '../examples/output_example'
+dicoPATH = True
 
 def main():
     start = time.time()
@@ -44,8 +45,8 @@ def main():
 
                 paths_images_all = get_all_folder_images(path_patient)
 
-                paths_RT = get_dirs_RT(paths_images_all,False)
-                paths_RD = get_dirs_RD(paths_RT,paths_images_all,False)
+                paths_RT = get_dirs_RT(paths_images_all,dicoPATH)
+                paths_RD = get_dirs_RD(paths_RT,paths_images_all,dicoPATH)
                 gc.collect()
                 for key in paths_RT.items():
                     RS_file_path = paths_RT[key[0]]
