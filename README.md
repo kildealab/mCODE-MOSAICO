@@ -112,7 +112,7 @@ python extract_only_dvh_factors patient ROI
 
 To extract **only** the **dosimetric or dvh factors** for *all* the patient and *all* the available ROIs
 ```
-python extract_only_dvh_factors patient ROI
+python extract_only_dvh_factors all all
 ```
 
 ## License 
