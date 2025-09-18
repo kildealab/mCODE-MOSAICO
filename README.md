@@ -104,6 +104,17 @@ sys.path.append('/path/to/the/folder/mCODE-MOSAICO/utils')
 |   └── ...
 </pre>
 
+
+To extract **only** the **dosimetric or dvh factors** for a single patient and a single ROI 
+```
+python extract_only_dvh_factors patient ROI
+```
+
+To extract **only** the **dosimetric or dvh factors** for *all* the patient and *all* the available ROIs
+```
+python extract_only_dvh_factors patient ROI
+```
+
 ## License 
 This project is provided under the GNU General Public License version 3 (GPLv3) to preserve open-source access to any derivative works. See the LICENSE file for more information.
 ## References
