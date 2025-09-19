@@ -104,7 +104,33 @@ sys.path.append('/path/to/the/folder/mCODE-MOSAICO/utils')
 |   └── ...
 </pre>
 
+### Features and Factors Extraction
 
+#### 1. Radiomics
+
+To extract **only** the **radiomics** for a single patient and a single ROI 
+```
+python extract_only_radiomics patient ROI
+```
+
+To extract **only** the **radiomics** for *all* the patient and *all* the available ROIs
+```
+python extract_only_radiomcis all all
+```
+
+#### 2. Dosiomics 
+
+To extract **only** the **dosiomics** for a single patient and a single ROI 
+```
+python extract_only_dosiomics patient ROI
+```
+
+To extract **only** the **dosiomics** for *all* the patient and *all* the available ROIs
+```
+python extract_only_dosiomics all all
+```
+
+#### 3. Dosimetric (DVH factors)
 To extract **only** the **dosimetric or dvh factors** for a single patient and a single ROI 
 ```
 python extract_only_dvh_factors patient ROI
