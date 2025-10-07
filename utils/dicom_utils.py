@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 from skimage.draw import polygon
 import random
 import SimpleITK as sit
-from pydicom.uid import generate_uid
 import os
 
 
@@ -631,5 +630,6 @@ def get_path_RD_dicoPATH(path_RS):
     sorted_data = sorted(files)# finds the RD file with the name RD.######.dcm
     #print(sorted_data)
     return os.path.join(path_RS, sorted_data[-1][-1])
+
 
 
