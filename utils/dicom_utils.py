@@ -444,11 +444,12 @@ def save_dcm(data_directory,path_to_save,image_3D,modality):
             "\\".join(map(str, filtered_image.TransformIndexToPhysicalPoint((0, 0, i)))),
         )
         #   Instance Number
+        new_UID = generate_uid()
         image_slice.SetMetaData("0020|0013", str(i))
         image_slice.SetMetaData("0008|0018", new_UID)
         # Write to the output directory and add the extension dcm, to force writing
         # in DICOM format.
-        new_UID = generate_uid()
+        
         writer.SetFileName(os.path.join(path_to_save, modality+'.'+new_UID+".dcm"))
         writer.Execute(image_slice)
     print('===============================================')
@@ -630,6 +631,7 @@ def get_path_RD_dicoPATH(path_RS):
     sorted_data = sorted(files)# finds the RD file with the name RD.######.dcm
     #print(sorted_data)
     return os.path.join(path_RS, sorted_data[-1][-1])
+
 
 
 
